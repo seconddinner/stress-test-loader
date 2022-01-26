@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type VerifierClient interface {
-	// Sends a list of proxy public ip to varify
+	// Sends a list of stresstest public ip to varify
 	Verify(ctx context.Context, in *MonitorServerConfig, opts ...grpc.CallOption) (*VerifyReply, error)
 }
 
@@ -43,7 +43,7 @@ func (c *verifierClient) Verify(ctx context.Context, in *MonitorServerConfig, op
 // All implementations must embed UnimplementedVerifierServer
 // for forward compatibility
 type VerifierServer interface {
-	// Sends a list of proxy public ip to varify
+	// Sends a list of stresstest public ip to varify
 	Verify(context.Context, *MonitorServerConfig) (*VerifyReply, error)
 	mustEmbedUnimplementedVerifierServer()
 }

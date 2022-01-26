@@ -1,0 +1,15 @@
+{
+    "VRList": [
+        {
+            "url": "https://changeme.com",
+            "timeout": 3,
+            "urlParameters": "/v1/version"
+        }
+    ],
+    "waitSeconds": 5000,
+    "initialWaitForLoaderStart": 0,
+    "DebugL": 5,
+    "listenPort": 9005,
+    "shutdownThreshHold": 5,
+    "shutdownFlag": true
+}

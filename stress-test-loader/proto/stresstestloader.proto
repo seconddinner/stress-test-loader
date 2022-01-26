@@ -7,25 +7,25 @@ package stresstestloader;
 
 // The verify service definition.
 service Verifier {
-  // Sends a list of proxy public ip to varify
+  // Sends a list of stresstest public ip to varify
   rpc Verify (MonitorServerConfig) returns (VerifyReply) {}
 }
 
 
 // The request to verify
 message VerifyRequest {
-  optional string proxyurl = 1;
+  optional string stresstesturl = 1;
   string url = 2;
   int32 timeout = 3;
   optional string postUser = 4;
   optional string postPassword = 5;
-  optional string urlParameters = 6; // refer to https://docs.google.com/document/d/1sKtA2ExVS5gjjqGkGOldib8UO_qvMzWH8qNloCmuJI4/edit#
+  optional string urlParameters = 6; 
 }
 
 message MonitorServerConfig {
   repeated VerifyRequest VRList = 1;
   int32 waitSeconds = 2;
-  optional int32 initialWaitForProxyStart = 3;
+  optional int32 initialWaitForstresstestStart = 3;
   enum DebugLevelEnum {
     PanicLevel = 0;
   	FatalLevel = 1;
@@ -37,7 +37,7 @@ message MonitorServerConfig {
   }
   optional DebugLevelEnum debugL = 4;
   int32 listenPort = 5;
-  optional int32 shutdownThreshHold = 6; // number of times we retry http before we shutdown squid
+  optional int32 shutdownThreshHold = 6; // number of times we retry http before we shutdown 
   optional bool shutdownFlag = 7;
 }
 // The response for the verify
