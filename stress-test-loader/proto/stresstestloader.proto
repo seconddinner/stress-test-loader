@@ -11,19 +11,20 @@ service LoadTestLoader {
   rpc StartLoadTest(TestRequest) returns (TestReply) {}
 }
 
+message EnvVariable {
+  string EnvName = 1;
+  string EnvValue = 2;
+}
 
 // The request to StartLoadTest
 message TestRequest {
-  optional string stresstesturl = 1;
-  string url = 2;
-  int32 timeout = 3;
-  optional string postUser = 4;
-  optional string postPassword = 5;
-  optional string urlParameters = 6; 
+  string loadtestExec = 1;
+  repeated EnvVariable envVariableList = 2;
+  // will add   bool runUntilStoped = 3;
+  int32 numberOfGames = 3;
 }
 
 message StressTestConfig {
-  repeated TestRequest VRList = 1;
   int32 waitSeconds = 2;
   optional int32 initialWaitForstresstestStart = 3;
   enum DebugLevelEnum {

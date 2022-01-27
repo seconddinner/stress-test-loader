@@ -1,0 +1,14 @@
+{
+    "loadtestExec": "/Users/jackxie/code/bin/CubeInfra.ProtocolTest.Cli/CubeInfra.ProtocolTest.Cli",
+    "envVariableList": [
+        {
+            "EnvName": "TargetEnvironment",
+            "EnvValue": "jxie"
+        },
+        {
+            "EnvName": "TargetAppRegion",
+            "EnvValue": "us-west-2"
+        }
+    ],
+    "numberOfGames": 100
+}

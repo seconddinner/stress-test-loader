@@ -25,31 +25,33 @@ type server struct {
 	pb.LoadTestLoaderServer
 }
 
-func startLoadTest() {
-	cmd := exec.Command("/Users/jackxie/code/bin/CubeInfra.ProtocolTest.Cli/CubeInfra.ProtocolTest.Cli")
+func startLoadTest(in *pb.TestRequest) {
+	log.Print(in)
+	cmd := exec.Command(in.LoadtestExec)
 	cmd.Env = os.Environ()
-	cmd.Env = append(cmd.Env, "TargetEnvironment=jxie")
-	cmd.Env = append(cmd.Env, "TargetAppRegion=us-west-2")
+	for _, s := range in.EnvVariableList {
+		cmd.Env = append(cmd.Env, s.EnvName+"="+s.EnvValue)
+	}
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
 	err := cmd.Run()
 	if err != nil {
-		log.Printf("cmd.Run: %s failed: %s\n", err)
+		log.Print("cmd.Run: %s failed: %s\n", err)
 	}
 	outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
 	if len(errStr) > 1 {
-		log.Printf("out:\n%s\nerr:\n%s\n", outStr, errStr)
+		log.Print("out:\n%s\nerr:\n%s\n", outStr, errStr)
 	}
 
-	log.Printf(outStr)
+	log.Print(outStr)
 	return
 }
 
 // not used right now, in the future, update config with this function dynamically
 func (s *server) StartLoadTest(ctx context.Context, in *pb.TestRequest) (*pb.TestReply, error) {
-	go startLoadTest()
+	go startLoadTest(in)
 	return &pb.TestReply{Status: "Hello again "}, nil
 }
 
