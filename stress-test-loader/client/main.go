@@ -25,11 +25,11 @@ func main() {
 	}
 
 	defer conn.Close()
-	c := pb.NewVerifierClient(conn)
+	c := pb.NewLoadTestLoaderClient(conn)
 
 	defer cancel()
 
-	r, err := c.Verify(ctx, &pb.MonitorServerConfig{})
+	r, err := c.StartLoadTest(ctx, &pb.TestRequest{})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}

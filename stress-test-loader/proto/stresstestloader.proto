@@ -5,15 +5,15 @@ option go_package = "github.com/seconddinner/jxie-sd/stress-test/stress-test-loa
 
 package stresstestloader;
 
-// The verify service definition.
-service Verifier {
+// The StartLoadTest service definition.
+service LoadTestLoader {
   // Sends a list of stresstest public ip to varify
-  rpc Verify (MonitorServerConfig) returns (VerifyReply) {}
+  rpc StartLoadTest(TestRequest) returns (TestReply) {}
 }
 
 
-// The request to verify
-message VerifyRequest {
+// The request to StartLoadTest
+message TestRequest {
   optional string stresstesturl = 1;
   string url = 2;
   int32 timeout = 3;
@@ -22,8 +22,8 @@ message VerifyRequest {
   optional string urlParameters = 6; 
 }
 
-message MonitorServerConfig {
-  repeated VerifyRequest VRList = 1;
+message StressTestConfig {
+  repeated TestRequest VRList = 1;
   int32 waitSeconds = 2;
   optional int32 initialWaitForstresstestStart = 3;
   enum DebugLevelEnum {
@@ -40,7 +40,7 @@ message MonitorServerConfig {
   optional int32 shutdownThreshHold = 6; // number of times we retry http before we shutdown 
   optional bool shutdownFlag = 7;
 }
-// The response for the verify
-message VerifyReply {
+// The response for the StartLoadTest
+message TestReply {
   string status = 1;
 }

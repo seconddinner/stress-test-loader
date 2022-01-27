@@ -1,0 +1,7 @@
+{
+    "configuration": [
+        {
+            "program": "${workspaceRoot}/stress-test-loader",
+        }
+    ]
+}

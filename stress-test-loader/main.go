@@ -19,20 +19,17 @@ import (
 // tag the version of the code here
 var Version = "notset"
 
-var VrList pb.MonitorServerConfig
+var VrList pb.StressTestConfig
 
 type server struct {
-	pb.VerifierServer
+	pb.LoadTestLoaderServer
 }
 
-func shutdownLoaderNode(shutdownFlag chan bool) {
-	log.Printf("shutdown started")
-	c := <-shutdownFlag
-	if c == true {
-		log.Printf("shutdown signal is true")
-	}
-	// call a shell command to log issued  host into an remote db.
-	cmd := exec.Command("reportbadserver.sh")
+func startLoadTest() {
+	cmd := exec.Command("/Users/jackxie/code/bin/CubeInfra.ProtocolTest.Cli/CubeInfra.ProtocolTest.Cli")
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "TargetEnvironment=jxie")
+	cmd.Env = append(cmd.Env, "TargetAppRegion=us-west-2")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -47,33 +44,13 @@ func shutdownLoaderNode(shutdownFlag chan bool) {
 	}
 
 	log.Printf(outStr)
-
-	// If config.json enable shutdown flag, we will shutdown the
-	if *VrList.ShutdownFlag == true {
-		cmd = exec.Command("systemctl", "stop", "something")
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stderr
-
-		//  comment out the following part to check if this is causing stabliblites issue
-
-		err = cmd.Run()
-		if err != nil {
-			log.Printf("cmd.Run: %s failed: %s\n", err)
-		}
-		outStr, errStr = string(stdout.Bytes()), string(stderr.Bytes())
-		if len(errStr) > 1 {
-			log.Printf("out:\n%s\nerr:\n%s\n", outStr, errStr)
-		}
-
-		log.Printf(outStr)
-
-	}
-	log.Printf("finished stopping")
+	return
 }
 
 // not used right now, in the future, update config with this function dynamically
-func (s *server) Verify(ctx context.Context, in *pb.MonitorServerConfig) (*pb.VerifyReply, error) {
-	return &pb.VerifyReply{Status: "Hello again "}, nil
+func (s *server) StartLoadTest(ctx context.Context, in *pb.TestRequest) (*pb.TestReply, error) {
+	go startLoadTest()
+	return &pb.TestReply{Status: "Hello again "}, nil
 }
 
 // func (s *server) SayHelloAgain(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
@@ -108,14 +85,14 @@ func main() {
 
 	if VrList.DebugL != nil {
 		// to do add more log levels
-		if *VrList.DebugL == pb.MonitorServerConfig_DebugLevel {
+		if *VrList.DebugL == pb.StressTestConfig_DebugLevel {
 			log.SetLevel(log.DebugLevel)
 		}
 	}
 
 	// setup grpc server, this app is build for external config if needed in the future
 	s := grpc.NewServer()
-	pb.RegisterVerifierServer(s, &server{})
+	pb.RegisterLoadTestLoaderServer(s, &server{})
 	log.Printf("%s grpc server listening at %v.", Version, lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

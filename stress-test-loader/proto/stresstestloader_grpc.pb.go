@@ -14,88 +14,88 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// VerifierClient is the client API for Verifier service.
+// LoadTestLoaderClient is the client API for LoadTestLoader service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type VerifierClient interface {
+type LoadTestLoaderClient interface {
 	// Sends a list of stresstest public ip to varify
-	Verify(ctx context.Context, in *MonitorServerConfig, opts ...grpc.CallOption) (*VerifyReply, error)
+	StartLoadTest(ctx context.Context, in *TestRequest, opts ...grpc.CallOption) (*TestReply, error)
 }
 
-type verifierClient struct {
+type loadTestLoaderClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewVerifierClient(cc grpc.ClientConnInterface) VerifierClient {
-	return &verifierClient{cc}
+func NewLoadTestLoaderClient(cc grpc.ClientConnInterface) LoadTestLoaderClient {
+	return &loadTestLoaderClient{cc}
 }
 
-func (c *verifierClient) Verify(ctx context.Context, in *MonitorServerConfig, opts ...grpc.CallOption) (*VerifyReply, error) {
-	out := new(VerifyReply)
-	err := c.cc.Invoke(ctx, "/stresstestloader.Verifier/Verify", in, out, opts...)
+func (c *loadTestLoaderClient) StartLoadTest(ctx context.Context, in *TestRequest, opts ...grpc.CallOption) (*TestReply, error) {
+	out := new(TestReply)
+	err := c.cc.Invoke(ctx, "/stresstestloader.LoadTestLoader/StartLoadTest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// VerifierServer is the server API for Verifier service.
-// All implementations must embed UnimplementedVerifierServer
+// LoadTestLoaderServer is the server API for LoadTestLoader service.
+// All implementations must embed UnimplementedLoadTestLoaderServer
 // for forward compatibility
-type VerifierServer interface {
+type LoadTestLoaderServer interface {
 	// Sends a list of stresstest public ip to varify
-	Verify(context.Context, *MonitorServerConfig) (*VerifyReply, error)
-	mustEmbedUnimplementedVerifierServer()
+	StartLoadTest(context.Context, *TestRequest) (*TestReply, error)
+	mustEmbedUnimplementedLoadTestLoaderServer()
 }
 
-// UnimplementedVerifierServer must be embedded to have forward compatible implementations.
-type UnimplementedVerifierServer struct {
+// UnimplementedLoadTestLoaderServer must be embedded to have forward compatible implementations.
+type UnimplementedLoadTestLoaderServer struct {
 }
 
-func (UnimplementedVerifierServer) Verify(context.Context, *MonitorServerConfig) (*VerifyReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
+func (UnimplementedLoadTestLoaderServer) StartLoadTest(context.Context, *TestRequest) (*TestReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartLoadTest not implemented")
 }
-func (UnimplementedVerifierServer) mustEmbedUnimplementedVerifierServer() {}
+func (UnimplementedLoadTestLoaderServer) mustEmbedUnimplementedLoadTestLoaderServer() {}
 
-// UnsafeVerifierServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to VerifierServer will
+// UnsafeLoadTestLoaderServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to LoadTestLoaderServer will
 // result in compilation errors.
-type UnsafeVerifierServer interface {
-	mustEmbedUnimplementedVerifierServer()
+type UnsafeLoadTestLoaderServer interface {
+	mustEmbedUnimplementedLoadTestLoaderServer()
 }
 
-func RegisterVerifierServer(s grpc.ServiceRegistrar, srv VerifierServer) {
-	s.RegisterService(&Verifier_ServiceDesc, srv)
+func RegisterLoadTestLoaderServer(s grpc.ServiceRegistrar, srv LoadTestLoaderServer) {
+	s.RegisterService(&LoadTestLoader_ServiceDesc, srv)
 }
 
-func _Verifier_Verify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MonitorServerConfig)
+func _LoadTestLoader_StartLoadTest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TestRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(VerifierServer).Verify(ctx, in)
+		return srv.(LoadTestLoaderServer).StartLoadTest(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/stresstestloader.Verifier/Verify",
+		FullMethod: "/stresstestloader.LoadTestLoader/StartLoadTest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VerifierServer).Verify(ctx, req.(*MonitorServerConfig))
+		return srv.(LoadTestLoaderServer).StartLoadTest(ctx, req.(*TestRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Verifier_ServiceDesc is the grpc.ServiceDesc for Verifier service.
+// LoadTestLoader_ServiceDesc is the grpc.ServiceDesc for LoadTestLoader service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Verifier_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "stresstestloader.Verifier",
-	HandlerType: (*VerifierServer)(nil),
+var LoadTestLoader_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "stresstestloader.LoadTestLoader",
+	HandlerType: (*LoadTestLoaderServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Verify",
-			Handler:    _Verifier_Verify_Handler,
+			MethodName: "StartLoadTest",
+			Handler:    _LoadTestLoader_StartLoadTest_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
