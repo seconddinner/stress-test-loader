@@ -14,3 +14,4 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 stress-test-loader/stress-test-loader-linux.gz
+build.log
