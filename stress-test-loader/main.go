@@ -50,6 +50,12 @@ func ensureDir(dirName string) error {
 }
 
 func copyStressTest(in *pb.TestRequest) (err error) {
+	err = ensureDir(StressTestLoaderConfig.WorkingFolder)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		log.Print(StressTestLoaderConfig.WorkingFolder + "exist!")
+	}
 	file, err := os.Create(StressTestLoaderConfig.WorkingFolder + "/" + in.S3Key)
 	if err != nil {
 		log.Error("Unable to open file %q, %v", in.S3Key, err)

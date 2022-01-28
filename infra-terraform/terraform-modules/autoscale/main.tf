@@ -10,6 +10,7 @@ resource "aws_launch_configuration" "stress_test_loader" {
   name_prefix                 = "stress_test_loader-${var.environment}"
   image_id                    = var.aws_ami_id
   instance_type               = var.instance_type
+  iam_instance_profile = "${aws_iam_instance_profile.stress_test_client_read_profile.name}"
   associate_public_ip_address = true
   key_name                    = aws_key_pair.sd_stresstest.key_name
   security_groups             = ["${aws_security_group.instance.id}"]
@@ -88,47 +89,13 @@ resource "aws_security_group" "instance" {
   }
 }
 
-resource "aws_lb" "stress_test_loader" {
-  internal                         = false
-  load_balancer_type               = "network"
-  enable_cross_zone_load_balancing = true
-  subnets                          = var.aws_subnets.*.id
-}
-
-resource "aws_lb_target_group" "tcp" {
-  protocol             = "TCP"
-  port                 = var.stress_test_loader_port
-  vpc_id               = var.vpc_id
-  deregistration_delay = 0
-  health_check {
-    protocol            = "TCP"
-    port                = var.stress_test_loader_port
-    interval            = 10
-    unhealthy_threshold = 2
-    healthy_threshold   = 2
-  }
-}
-
-resource "aws_lb_listener" "tcp" {
-  load_balancer_arn = aws_lb.stress_test_loader.arn
-  protocol          = "TCP"
-  port              = var.stress_test_loader_port
-
-  default_action {
-    target_group_arn = aws_lb_target_group.tcp.arn
-    type             = "forward"
-  }
-}
 
 resource "aws_autoscaling_group" "stress_test_loader" {
   launch_configuration = aws_launch_configuration.stress_test_loader.name
   vpc_zone_identifier  = var.aws_subnets.*.id
 
-  health_check_type = "ELB"
+  health_check_type = "EC2"
 
-  target_group_arns = [
-    "${aws_lb_target_group.tcp.arn}",
-  ]
 
   lifecycle {
     create_before_destroy = true
