@@ -1,0 +1,3 @@
+bucket = "terraform-hmg-v3"
+key    = "___NEED_SED___"
+region = "us-east-1"
