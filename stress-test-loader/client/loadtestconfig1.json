@@ -13,8 +13,7 @@
         },
         {
             "EnvName": "NumberOfGameToPlay",
-            "EnvValue": "1000"
+            "EnvValue": "10"
         }
-    ],
-    "numberOfGames": 100
+    ]
 }

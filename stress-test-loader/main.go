@@ -50,12 +50,6 @@ func ensureDir(dirName string) error {
 }
 
 func copyStressTest(in *pb.TestRequest) (err error) {
-	err = ensureDir(StressTestLoaderConfig.WorkingFolder)
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		log.Print(StressTestLoaderConfig.WorkingFolder + "exist!")
-	}
 	file, err := os.Create(StressTestLoaderConfig.WorkingFolder + "/" + in.S3Key)
 	if err != nil {
 		log.Error("Unable to open file %q, %v", in.S3Key, err)
@@ -140,7 +134,7 @@ func startStressTest(in *pb.TestRequest) (err error) {
 // not used right now, in the future, update config with this function dynamically
 func (s *server) StartStressTest(ctx context.Context, in *pb.TestRequest) (*pb.TestReply, error) {
 	go startStressTest(in)
-	return &pb.TestReply{Status: "Hello again "}, nil
+	return &pb.TestReply{Status: in.S3Key + " stress-test started"}, nil
 }
 
 // func (s *server) SayHelloAgain(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
