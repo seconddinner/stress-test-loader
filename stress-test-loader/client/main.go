@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func readLoadTestConfig(f string) (pbRequest pb.TestRequest) {
+func readStressTestConfig(f string) (pbRequest pb.TestRequest) {
 	// open config.json defined by protobuf
 	jsonFile, err := os.Open(f)
 	if err != nil {
@@ -42,7 +42,7 @@ func main() {
 		host = os.Args[2]
 	}
 	loadTestConfig = os.Args[1]
-	pbRequest = readLoadTestConfig(loadTestConfig)
+	pbRequest = readStressTestConfig(loadTestConfig)
 	ctx, cancel := context.WithTimeout(context.Background(), 3000*time.Second)
 
 	conn, err := grpc.DialContext(ctx, host, grpc.WithInsecure())
@@ -52,11 +52,11 @@ func main() {
 	}
 
 	defer conn.Close()
-	c := pb.NewLoadTestLoaderClient(conn)
+	c := pb.NewStressTestLoaderClient(conn)
 
 	defer cancel()
 
-	r, err := c.StartLoadTest(ctx, &pbRequest)
+	r, err := c.StartStressTest(ctx, &pbRequest)
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}

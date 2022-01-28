@@ -1,14 +1,14 @@
 
 syntax = "proto3";
 
-option go_package = "github.com/seconddinner/jxie-sd/stress-test/stress-test-loader/stresstestloader";
+option go_package = "github.com/seconddinner/stress-test/stress-test-loader/stresstestloader";
 
 package stresstestloader;
 
-// The StartLoadTest service definition.
-service LoadTestLoader {
+// The StartStressTest service definition.
+service StressTestLoader {
   // Sends a list of stresstest public ip to varify
-  rpc StartLoadTest(TestRequest) returns (TestReply) {}
+  rpc StartStressTest(TestRequest) returns (TestReply) {}
 }
 
 message EnvVariable {
@@ -16,7 +16,7 @@ message EnvVariable {
   string EnvValue = 2;
 }
 
-// The request to StartLoadTest
+// The request to StartStressTest
 message TestRequest {
   string loadtestExec = 1;
   string s3 = 2;
@@ -40,7 +40,7 @@ message StressTestConfig {
   optional DebugLevelEnum debugL = 4;
   int32 listenPort = 5;
 }
-// The response for the StartLoadTest
+// The response for the StartStressTest
 message TestReply {
   string status = 1;
 }

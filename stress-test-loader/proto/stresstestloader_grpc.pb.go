@@ -14,88 +14,88 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// LoadTestLoaderClient is the client API for LoadTestLoader service.
+// StressTestLoaderClient is the client API for StressTestLoader service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type LoadTestLoaderClient interface {
+type StressTestLoaderClient interface {
 	// Sends a list of stresstest public ip to varify
-	StartLoadTest(ctx context.Context, in *TestRequest, opts ...grpc.CallOption) (*TestReply, error)
+	StartStressTest(ctx context.Context, in *TestRequest, opts ...grpc.CallOption) (*TestReply, error)
 }
 
-type loadTestLoaderClient struct {
+type stressTestLoaderClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewLoadTestLoaderClient(cc grpc.ClientConnInterface) LoadTestLoaderClient {
-	return &loadTestLoaderClient{cc}
+func NewStressTestLoaderClient(cc grpc.ClientConnInterface) StressTestLoaderClient {
+	return &stressTestLoaderClient{cc}
 }
 
-func (c *loadTestLoaderClient) StartLoadTest(ctx context.Context, in *TestRequest, opts ...grpc.CallOption) (*TestReply, error) {
+func (c *stressTestLoaderClient) StartStressTest(ctx context.Context, in *TestRequest, opts ...grpc.CallOption) (*TestReply, error) {
 	out := new(TestReply)
-	err := c.cc.Invoke(ctx, "/stresstestloader.LoadTestLoader/StartLoadTest", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/stresstestloader.StressTestLoader/StartStressTest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// LoadTestLoaderServer is the server API for LoadTestLoader service.
-// All implementations must embed UnimplementedLoadTestLoaderServer
+// StressTestLoaderServer is the server API for StressTestLoader service.
+// All implementations must embed UnimplementedStressTestLoaderServer
 // for forward compatibility
-type LoadTestLoaderServer interface {
+type StressTestLoaderServer interface {
 	// Sends a list of stresstest public ip to varify
-	StartLoadTest(context.Context, *TestRequest) (*TestReply, error)
-	mustEmbedUnimplementedLoadTestLoaderServer()
+	StartStressTest(context.Context, *TestRequest) (*TestReply, error)
+	mustEmbedUnimplementedStressTestLoaderServer()
 }
 
-// UnimplementedLoadTestLoaderServer must be embedded to have forward compatible implementations.
-type UnimplementedLoadTestLoaderServer struct {
+// UnimplementedStressTestLoaderServer must be embedded to have forward compatible implementations.
+type UnimplementedStressTestLoaderServer struct {
 }
 
-func (UnimplementedLoadTestLoaderServer) StartLoadTest(context.Context, *TestRequest) (*TestReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StartLoadTest not implemented")
+func (UnimplementedStressTestLoaderServer) StartStressTest(context.Context, *TestRequest) (*TestReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartStressTest not implemented")
 }
-func (UnimplementedLoadTestLoaderServer) mustEmbedUnimplementedLoadTestLoaderServer() {}
+func (UnimplementedStressTestLoaderServer) mustEmbedUnimplementedStressTestLoaderServer() {}
 
-// UnsafeLoadTestLoaderServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to LoadTestLoaderServer will
+// UnsafeStressTestLoaderServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to StressTestLoaderServer will
 // result in compilation errors.
-type UnsafeLoadTestLoaderServer interface {
-	mustEmbedUnimplementedLoadTestLoaderServer()
+type UnsafeStressTestLoaderServer interface {
+	mustEmbedUnimplementedStressTestLoaderServer()
 }
 
-func RegisterLoadTestLoaderServer(s grpc.ServiceRegistrar, srv LoadTestLoaderServer) {
-	s.RegisterService(&LoadTestLoader_ServiceDesc, srv)
+func RegisterStressTestLoaderServer(s grpc.ServiceRegistrar, srv StressTestLoaderServer) {
+	s.RegisterService(&StressTestLoader_ServiceDesc, srv)
 }
 
-func _LoadTestLoader_StartLoadTest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _StressTestLoader_StartStressTest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TestRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LoadTestLoaderServer).StartLoadTest(ctx, in)
+		return srv.(StressTestLoaderServer).StartStressTest(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/stresstestloader.LoadTestLoader/StartLoadTest",
+		FullMethod: "/stresstestloader.StressTestLoader/StartStressTest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LoadTestLoaderServer).StartLoadTest(ctx, req.(*TestRequest))
+		return srv.(StressTestLoaderServer).StartStressTest(ctx, req.(*TestRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// LoadTestLoader_ServiceDesc is the grpc.ServiceDesc for LoadTestLoader service.
+// StressTestLoader_ServiceDesc is the grpc.ServiceDesc for StressTestLoader service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var LoadTestLoader_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "stresstestloader.LoadTestLoader",
-	HandlerType: (*LoadTestLoaderServer)(nil),
+var StressTestLoader_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "stresstestloader.StressTestLoader",
+	HandlerType: (*StressTestLoaderServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "StartLoadTest",
-			Handler:    _LoadTestLoader_StartLoadTest_Handler,
+			MethodName: "StartStressTest",
+			Handler:    _StressTestLoader_StartStressTest_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
