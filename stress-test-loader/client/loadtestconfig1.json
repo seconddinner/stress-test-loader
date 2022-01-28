@@ -1,5 +1,7 @@
 {
-    "loadtestExec": "/Users/jackxie/code/bin/CubeInfra.ProtocolTest.Cli/CubeInfra.ProtocolTest.Cli",
+    "s3": "cube-loadtest",
+    "s3key": "cli.tgz",
+    "loadtestExec": "/Users/jackxie/code/bin/CubeInfra.ProtocolTest.Cli/CubeInfra.ProtocolTest.Cli1",
     "envVariableList": [
         {
             "EnvName": "TargetEnvironment",
