@@ -1,0 +1,13 @@
+[Unit]
+Description=stress-test-loader
+Wants=network-online.target
+After=network-online.target
+
+
+[Service]
+Restart=always
+WorkingDirectory=/usr/local/stress-test-loader
+ExecStart=/usr/local/stress-test-loader/stress-test-loader-linux
+
+[Install]
+WantedBy=multi-user.target
