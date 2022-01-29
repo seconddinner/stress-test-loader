@@ -116,6 +116,15 @@ resource "aws_autoscaling_group" "stress_test_loader" {
 
   enabled_metrics = tolist(["GroupMinSize", "GroupMaxSize", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"])
 
+  tag {
+    key                 = "stress-test-nodes"
+    value               = "stress-test-nodes"
+    propagate_at_launch = true
+  }
+  
+  # provisioner "local-exec" {
+  #   command = "${path.module}/getips.sh"
+  # }
 }
 
 # auto scale up policy

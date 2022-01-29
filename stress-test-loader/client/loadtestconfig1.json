@@ -13,7 +13,7 @@
         },
         {
             "EnvName": "NumberOfGameToPlay",
-            "EnvValue": "10"
+            "EnvValue": "2"
         }
     ]
 }

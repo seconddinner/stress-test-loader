@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	pb "stress-test-loader/proto"
@@ -11,6 +12,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
+
+type PublicIP struct {
+	PublicIP string `json:"public_ip"`
+}
 
 func readStressTestConfig(f string) (pbRequest pb.TestRequest) {
 	// open config.json defined by protobuf
@@ -34,31 +39,53 @@ func readStressTestConfig(f string) (pbRequest pb.TestRequest) {
 }
 
 func main() {
-	var host string
+
 	var loadTestConfig string
 	var pbRequest pb.TestRequest
-	host = "localhost:9005"
+	port := "9005"
+	var ipList [][]PublicIP
+
 	if len(os.Args) > 2 {
-		host = os.Args[2]
+
+		jsonFile, err := os.Open(os.Args[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer jsonFile.Close()
+		byteValue, _ := ioutil.ReadAll(jsonFile)
+		json.Unmarshal(byteValue, &ipList)
+	} else {
+		var localhost PublicIP
+		localhost.PublicIP = "localhost"
+		var l1 []PublicIP
+		l1 = append(l1, localhost)
+
+		ipList = append(ipList, l1)
 	}
+	fmt.Println(ipList)
+
 	loadTestConfig = os.Args[1]
 	pbRequest = readStressTestConfig(loadTestConfig)
-	ctx, cancel := context.WithTimeout(context.Background(), 3000*time.Second)
 
-	conn, err := grpc.DialContext(ctx, host, grpc.WithInsecure())
-	if err != nil {
-		log.Println("Dial failed!")
-		return
+	for _, s := range ipList {
+		fmt.Println(s[0].PublicIP)
+		ctx, cancel := context.WithTimeout(context.Background(), 3000*time.Second)
+		conn, err := grpc.DialContext(ctx, s[0].PublicIP+":"+port, grpc.WithInsecure())
+		if err != nil {
+			log.Println("Dial failed!")
+			return
+		}
+		defer conn.Close()
+		c := pb.NewStressTestLoaderClient(conn)
+
+		defer cancel()
+
+		r, err := c.StartStressTest(ctx, &pbRequest)
+		if err != nil {
+			log.Error("could not greet: %v", err)
+		}
+		log.Printf("Greeting: %s", r.GetStatus())
+
 	}
 
-	defer conn.Close()
-	c := pb.NewStressTestLoaderClient(conn)
-
-	defer cancel()
-
-	r, err := c.StartStressTest(ctx, &pbRequest)
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
-	}
-	log.Printf("Greeting: %s", r.GetStatus())
 }
