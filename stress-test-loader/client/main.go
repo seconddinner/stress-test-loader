@@ -68,24 +68,25 @@ func main() {
 	pbRequest = readStressTestConfig(loadTestConfig)
 
 	for _, s := range ipList {
-		fmt.Println(s[0].PublicIP)
-		ctx, cancel := context.WithTimeout(context.Background(), 3000*time.Second)
-		conn, err := grpc.DialContext(ctx, s[0].PublicIP+":"+port, grpc.WithInsecure())
-		if err != nil {
-			log.Println("Dial failed!")
-			return
+		for _, s2 := range s {
+			fmt.Println(s2.PublicIP)
+			ctx, cancel := context.WithTimeout(context.Background(), 3000*time.Second)
+			conn, err := grpc.DialContext(ctx, s2.PublicIP+":"+port, grpc.WithInsecure())
+			if err != nil {
+				log.Println("Dial failed!")
+				return
+			}
+			defer conn.Close()
+			c := pb.NewStressTestLoaderClient(conn)
+
+			defer cancel()
+
+			r, err := c.StartStressTest(ctx, &pbRequest)
+			if err != nil {
+				log.Error("could not greet: %v", err)
+			}
+			log.Printf("Greeting: %s", r.GetStatus())
+
 		}
-		defer conn.Close()
-		c := pb.NewStressTestLoaderClient(conn)
-
-		defer cancel()
-
-		r, err := c.StartStressTest(ctx, &pbRequest)
-		if err != nil {
-			log.Error("could not greet: %v", err)
-		}
-		log.Printf("Greeting: %s", r.GetStatus())
-
 	}
-
 }
