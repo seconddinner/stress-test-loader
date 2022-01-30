@@ -1,5 +1,5 @@
 variable "source_ami_region" {
-    default = "us-west-1"
+    default = "us-west-2"
 }
 
 variable "name" {

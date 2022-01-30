@@ -17,8 +17,8 @@ terraform {
   required_version = "~> 1.0"
 
   backend "s3" {
-    bucket = "terraform-hmg-v3"
-    key    = "aws-production"
+    bucket = "terraform-stl-v1"
+    key    = "production-stl"
     region = "us-east-1"
   }
 }
@@ -34,10 +34,6 @@ provider "aws" {
   profile = "default"
 }
 
-provider "aws" {
-  alias  = "us-west-2"
-  region = "us-west-2"
-}
 
 provider "aws" {
   alias  = "eu-central-1"
@@ -74,15 +70,6 @@ provider "aws" {
   region = "ap-northeast-1"
 }
 
-
-module "us-west-2-network" {
-  source     = "../../terraform-modules/vpc"
-  cidr_block = var.ntw_cidr_block
-  az_count   = var.az_count
-  providers = {
-    aws = aws.us-west-2
-  }
-}
 
 module "eu-central-1-network" {
   source     = "../../terraform-modules/vpc"
@@ -196,41 +183,6 @@ module "autoscale-ap-southeast-1" {
   domain_weight           = 100
   providers = {
     aws = aws.ap-southeast-1
-  }
-  extra_tags = {
-    "type" = "stress_test_loader"
-  }
-}
-module "ami-us-west-2" {
-  source        = "../../terraform-modules/ami"
-  source_ami_id = var.source_ami_id
-  providers = {
-    aws = aws.us-west-2
-  }
-}
-
-module "autoscale-us-west-2" {
-  source                  = "../../terraform-modules/autoscale"
-  vpc_id                  = module.us-west-2-network.aws_vpc_id
-  cidr_block              = var.ntw_cidr_block
-  subnet_ids              = module.us-west-2-network.aws_subnet_list
-  aws_subnets             = module.us-west-2-network.aws_subnets
-  min_size                = var.asg_min
-  max_size                = var.asg_max
-  desired_capacity        = var.asg_desired
-  instance_type           = var.instance_type
-  environment             = var.environment
-  stress_test_loader_port              = var.stress_test_loader_port
-  PNS_version             = local.PNS_version
-  down_scaling_adjustment = -(var.asg_min / 2)
-  up_scaling_adjustment   = var.asg_min / 2
-  domain_rand             = ""
-  user_data               = local.user_data
-  stress_test_loader_allowed_cidr      = var.stress_test_loader_allowed_cidr
-  aws_ami_id              = module.ami-us-west-2.ami_id
-  dns_name                = "us-west-2"
-  providers = {
-    aws = aws.us-west-2
   }
   extra_tags = {
     "type" = "stress_test_loader"

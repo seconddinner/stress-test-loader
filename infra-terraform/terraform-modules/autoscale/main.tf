@@ -10,7 +10,7 @@ resource "aws_launch_configuration" "stress_test_loader" {
   name_prefix                 = "stress_test_loader-${var.environment}"
   image_id                    = var.aws_ami_id
   instance_type               = var.instance_type
-  iam_instance_profile = "${aws_iam_instance_profile.stress_test_client_read_profile.name}"
+  iam_instance_profile = var.iam_name
   associate_public_ip_address = true
   key_name                    = aws_key_pair.sd_stresstest.key_name
   security_groups             = ["${aws_security_group.instance.id}"]

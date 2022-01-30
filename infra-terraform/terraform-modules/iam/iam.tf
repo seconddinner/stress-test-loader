@@ -1,5 +1,5 @@
 resource "aws_iam_role" "stress_test_client_read_role" {
-  name = "stress_test_client_read_role"
+  name = "stress_test_client_read_role-${var.environment}"
 
   assume_role_policy = <<EOF
 {

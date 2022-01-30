@@ -19,7 +19,7 @@ variable "az_count" {
 
 variable "asg_min" {
   description = ""
-  default     = 250
+  default     = 2
 }
 
 variable "asg_max" {
@@ -29,14 +29,14 @@ variable "asg_max" {
 
 variable "asg_desired" {
   description = ""
-  default     = 250
+  default     = 2
 }
 
 
 
 variable "big_asg_min" {
   description = ""
-  default     = 500
+  default     = 2
 }
 
 variable "big_asg_max" {
@@ -46,7 +46,7 @@ variable "big_asg_max" {
 
 variable "big_asg_desired" {
   description = ""
-  default     = 500
+  default     = 2
 }
 
 
@@ -63,7 +63,7 @@ variable "environment" {
 }
 
 variable "stress_test_loader_port" {
-  default = 3131
+  default = 9005
 }
 
 variable "PNS_version" {
@@ -73,5 +73,5 @@ variable "PNS_version" {
 
 variable "stress_test_loader_allowed_cidr" {
   type    = list(string)
-  default = ["3.0.157.243/32", "54.218.136.16/32", "44.237.253.172/32", "35.162.220.205/32", "34.124.247.112/32", "104.160.131.201/32"]
+  default = ["47.154.122.36/32"]
 }

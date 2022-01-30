@@ -14,7 +14,9 @@ variable "subnet_ids" {
 }
 
 
-
+variable "iam_name" {
+  type = string   
+}
 
 # ###
 # # Optional variables. Generally okay to leave at the default.

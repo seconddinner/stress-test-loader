@@ -62,9 +62,15 @@ locals {
   })
 }
 
+module "iam" {
+   source             = "../../terraform-modules/iam"
+   environment        = var.environment
+}
+
 module "autoscale" {
   source             = "../../terraform-modules/autoscale"
   vpc_id             = module.network.aws_vpc_id
+  iam_name = module.iam.iam_name
   cidr_block         = var.ntw_cidr_block
   subnet_ids         = module.network.aws_subnet_list
   aws_subnets        = module.network.aws_subnets
