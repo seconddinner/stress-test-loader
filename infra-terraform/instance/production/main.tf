@@ -28,10 +28,22 @@ locals {
   PNS_version = var.PNS_version
 }
 
+
+
+
+
 provider "aws" {
   region  = "us-east-1"
   alias   = "us-east-1"
   profile = "default"
+}
+
+module "iam" {
+   source             = "../../terraform-modules/iam"
+   environment        = var.environment
+   providers = {
+    aws = aws.us-east-1
+  }
 }
 
 
@@ -123,10 +135,19 @@ module "ami-us-east-1" {
     aws = aws.us-east-1
   }
 }
+locals {
+  user_data = templatefile(join("/", tolist([path.module, "user_data.sh"])), {
+    stress_test_loader_allowed_cidr = var.stress_test_loader_allowed_cidr
+    stress_test_loader_port         = var.stress_test_loader_port
+    environment        = var.environment
+  })
+}
+
 
 module "autoscale-us-east-1" {
   source                  = "../../terraform-modules/autoscale"
   vpc_id                  = module.us-east-1-network.aws_vpc_id
+ iam_name = module.iam.iam_name
   cidr_block              = var.ntw_cidr_block
   subnet_ids              = module.us-east-1-network.aws_subnet_list
   aws_subnets             = module.us-east-1-network.aws_subnets
@@ -163,6 +184,7 @@ module "ami-ap-southeast-1" {
 module "autoscale-ap-southeast-1" {
   source                  = "../../terraform-modules/autoscale"
   vpc_id                  = module.ap-southeast-1-network.aws_vpc_id
+  iam_name = module.iam.iam_name
   cidr_block              = var.ntw_cidr_block
   subnet_ids              = module.ap-southeast-1-network.aws_subnet_list
   aws_subnets             = module.ap-southeast-1-network.aws_subnets
@@ -200,6 +222,7 @@ module "ami-eu-central-1" {
 module "autoscale-eu-central-1" {
   source                  = "../../terraform-modules/autoscale"
   vpc_id                  = module.eu-central-1-network.aws_vpc_id
+  iam_name = module.iam.iam_name
   cidr_block              = var.ntw_cidr_block
   subnet_ids              = module.eu-central-1-network.aws_subnet_list
   aws_subnets             = module.eu-central-1-network.aws_subnets
@@ -233,16 +256,10 @@ module "ami-ap-south-1" {
   }
 }
 
-locals {
-  user_data = templatefile(join("/", tolist([path.module, "user_data.sh"])), {
-    stress_test_loader_allowed_cidr = var.stress_test_loader_allowed_cidr
-    stress_test_loader_port         = var.stress_test_loader_port
-    environment        = var.environment
-  })
-}
 # module "autoscale-ap-south-1" {
 #   source           = "../../terraform-modules/autoscale"
 #   vpc_id           = module.ap-south-1-network.aws_vpc_id
+#  iam_name = module.iam.iam_name
 #   cidr_block       = var.ntw_cidr_block
 #   subnet_ids       = module.ap-south-1-network.aws_subnet_list
 #   aws_subnets      = module.ap-south-1-network.aws_subnets
@@ -277,6 +294,7 @@ module "ami-ap-northeast-2" {
 module "autoscale-ap-northeast-2" {
   source                  = "../../terraform-modules/autoscale"
   vpc_id                  = module.ap-northeast-2-network.aws_vpc_id
+  iam_name = module.iam.iam_name
   cidr_block              = var.ntw_cidr_block
   subnet_ids              = module.ap-northeast-2-network.aws_subnet_list
   aws_subnets             = module.ap-northeast-2-network.aws_subnets
@@ -322,6 +340,7 @@ module "ami-ap-northeast-1" {
 module "autoscale-ap-northeast-1" {
   source                  = "../../terraform-modules/autoscale"
   vpc_id                  = module.ap-northeast-1-network.aws_vpc_id
+  iam_name = module.iam.iam_name
   cidr_block              = var.ntw_cidr_block
   subnet_ids              = module.ap-northeast-1-network.aws_subnet_list
   aws_subnets             = module.ap-northeast-1-network.aws_subnets
@@ -368,6 +387,7 @@ module "ami-ap-southeast-2" {
 module "autoscale-ap-southeast-2" {
   source                  = "../../terraform-modules/autoscale"
   vpc_id                  = module.ap-southeast-2-network.aws_vpc_id
+  iam_name = module.iam.iam_name
   cidr_block              = var.ntw_cidr_block
   subnet_ids              = module.ap-southeast-2-network.aws_subnet_list
   aws_subnets             = module.ap-southeast-2-network.aws_subnets
