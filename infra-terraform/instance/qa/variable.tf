@@ -29,7 +29,7 @@ variable "asg_max" {
 
 variable "asg_desired" {
   description = ""
-  default     = 2
+  default     = 4
 }
 
 variable "instance_type" {

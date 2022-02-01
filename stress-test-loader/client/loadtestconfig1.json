@@ -1,6 +1,6 @@
 {
     "s3": "cube-loadtest",
-    "s3key": "cli.tgz",
+    "s3key": "stresstest-demo-2022-1-31.tgz",
     "loadtestExec": "CubeInfra.ProtocolTest.Cli",
     "envVariableList": [
         {
@@ -13,7 +13,7 @@
         },
         {
             "EnvName": "NumberOfGameToPlay",
-            "EnvValue": "2"
+            "EnvValue": "100"
         }
     ]
 }
