@@ -20,10 +20,14 @@ message EnvVariable {
 message TestRequest {
   string loadtestExec = 1;
   string s3 = 2;
-  string s3key = 5;
   repeated EnvVariable envVariableList = 3;
   // will add   bool runUntilStoped ;
   int32 numberOfGames = 4;
+  string s3key = 5;
+  int32 stepTestStart = 6;
+  int32 stepTestEnd = 7;
+  int32 stepTestStep = 8;
+  int32 stepTestSleepSeconds = 9;
 }
 
 message StressTestConfig {

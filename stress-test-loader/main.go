@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
@@ -17,6 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
@@ -55,6 +57,16 @@ func copyStressTest(in *pb.TestRequest) (err error) {
 		log.Error("Unable to open file %q, %v", in.S3Key, err)
 	}
 	defer file.Close()
+
+	// use this to check if file exist
+	// svc := s3.New(session.New(&aws.Config{
+	// 	Region: aws.String("us-west-2")}))
+
+	// input := &s3.HeadObjectInput{
+	// 	Bucket: aws.String(in.S3),
+	// 	Key:    aws.String(in.S3Key),
+	// }
+	// result, err := svc.GetObjectTagging(input)
 
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-west-2")},
@@ -104,30 +116,39 @@ func copyStressTest(in *pb.TestRequest) (err error) {
 
 func startStressTest(in *pb.TestRequest) (err error) {
 	log.Print(in)
-
 	err = copyStressTest(in)
 	if err != nil {
 		return
 	}
-	cmd := exec.Command(StressTestLoaderConfig.WorkingFolder + "/bin" + "/" + in.LoadtestExec)
-	cmd.Env = os.Environ()
-	for _, s := range in.EnvVariableList {
-		cmd.Env = append(cmd.Env, s.EnvName+"="+s.EnvValue)
-	}
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
 
-	err = cmd.Run()
-	if err != nil {
-		log.Error("cmd.Run: %s failed: %s\n", err)
-	}
-	outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
-	if len(errStr) > 1 {
-		log.Print("out:\n%s\nerr:\n%s\n", outStr, errStr)
-	}
+	for i := in.StepTestStart; i <= in.StepTestEnd; i = in.StepTestStep + i {
+		log.Printf("NumberOfClients %s", i)
 
-	log.Print(outStr)
+		cmd := exec.Command(StressTestLoaderConfig.WorkingFolder + "/bin" + "/" + in.LoadtestExec)
+		cmd.Env = os.Environ()
+		for _, s := range in.EnvVariableList {
+			if s.EnvName != "NumberOfClients" {
+				cmd.Env = append(cmd.Env, s.EnvName+"="+s.EnvValue)
+			} else {
+				cmd.Env = append(cmd.Env, "NumberOfClients="+fmt.Sprintf("%d", i))
+			}
+		}
+		log.Debug(cmd.Env)
+
+		var stdout, stderr bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+
+		err = cmd.Run()
+		if err != nil {
+			log.Error("cmd.Run: %s failed: %s\n", err)
+		}
+		outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
+		if len(errStr) > 1 {
+			log.Print("out:\n%s\nerr:\n%s\n", outStr, errStr)
+		}
+		log.Debug(outStr)
+	}
 	return
 }
 
@@ -180,9 +201,9 @@ func main() {
 			log.SetLevel(log.DebugLevel)
 		}
 	}
-
 	// setup grpc server, this app is build for external config if needed in the future
 	s := grpc.NewServer()
+
 	pb.RegisterStressTestLoaderServer(s, &server{})
 	log.Printf("%s grpc server listening at %v.", Version, lis.Addr())
 	if err := s.Serve(lis); err != nil {

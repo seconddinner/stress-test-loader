@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -x
-cd cicd/terraform/aws/instance/qa-us-west-1
+cd cicd/terraform/aws/instance/qa
 sed -i "s/___NEED_SED___/qa-$PNS_version/g" qa.tfbackend
 terraform init -reconfigure -backend-config=qa.tfbackend 
 if [[ $latestAMIVersion == "true" ]] 

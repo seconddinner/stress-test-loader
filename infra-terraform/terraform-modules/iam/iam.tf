@@ -18,18 +18,18 @@ resource "aws_iam_role" "stress_test_client_read_role" {
 EOF
 
   tags = {
-      tag-key = "stress_test"
+    tag-key = "stress_test"
   }
 }
 
 resource "aws_iam_instance_profile" "stress_test_client_read_profile" {
   name = "stress_test_client_read_profile"
-  role = "${aws_iam_role.stress_test_client_read_role.name}"
+  role = aws_iam_role.stress_test_client_read_role.name
 }
 
 resource "aws_iam_role_policy" "stress_test_client_read" {
   name = "stress_test_client_read_policy"
-  role = "${aws_iam_role.stress_test_client_read_role.id}"
+  role = aws_iam_role.stress_test_client_read_role.id
 
   policy = <<EOF
 {
@@ -40,7 +40,7 @@ resource "aws_iam_role_policy" "stress_test_client_read" {
         "s3:GetObject"
       ],
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::cube-loadtest/*"
+      "Resource": "arn:aws:s3:::cubestressclientartifactbucket-sd/*"
     }
   ]
 }

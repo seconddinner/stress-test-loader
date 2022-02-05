@@ -1,3 +1,5 @@
+# github.com/ahrtr/logrus v1.0.3
+## explicit
 # github.com/aws/aws-sdk-go v1.42.43
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
@@ -64,6 +66,8 @@ github.com/jmespath/go-jmespath
 # github.com/sirupsen/logrus v1.8.1
 ## explicit; go 1.13
 github.com/sirupsen/logrus
+# golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+## explicit; go 1.11
 # golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
 ## explicit; go 1.17
 golang.org/x/net/http/httpguts
@@ -165,3 +169,7 @@ google.golang.org/protobuf/types/descriptorpb
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
+# gopkg.in/airbrake/gobrake.v2 v2.0.9
+## explicit
+# gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.2
+## explicit

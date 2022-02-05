@@ -29,11 +29,11 @@ variable "asg_max" {
 
 variable "asg_desired" {
   description = ""
-  default     = 4
+  default     = 2
 }
 
 variable "instance_type" {
-  default = "t4g.nano"
+  default = "t4g.xlarge"
 }
 
 variable "key_name" {
@@ -60,4 +60,8 @@ variable "PNS_version" {
 variable "stress_test_loader_allowed_cidr" {
   type    = list(string)
   default = ["47.154.122.36/32"]
+}
+
+variable "owner_id" {
+  default = "275684003332"
 }
