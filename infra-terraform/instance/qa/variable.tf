@@ -29,11 +29,11 @@ variable "asg_max" {
 
 variable "asg_desired" {
   description = ""
-  default     = 2
+  default     = 100
 }
 
 variable "instance_type" {
-  default = "t4g.xlarge"
+  default = "t4g.nano"
 }
 
 variable "key_name" {

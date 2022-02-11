@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -114,15 +115,19 @@ func copyStressTest(in *pb.TestRequest) (err error) {
 	return
 }
 
-func startStressTest(in *pb.TestRequest) (err error) {
+func (t *ChanStruct) startStressTest(in *pb.TestRequest) (err error) {
 	log.Print(in)
 	err = copyStressTest(in)
 	if err != nil {
 		return
 	}
 
+	// mst := <-t.chMessages
+
+	// log.Print(mst)
+
 	for i := in.StepTestStart; i <= in.StepTestEnd; i = in.StepTestStep + i {
-		log.Printf("NumberOfClients %s", i)
+		log.Printf("NumberOfClients %d", i)
 
 		cmd := exec.Command(StressTestLoaderConfig.WorkingFolder + "/bin" + "/" + in.LoadtestExec)
 		cmd.Env = os.Environ()
@@ -135,26 +140,40 @@ func startStressTest(in *pb.TestRequest) (err error) {
 		}
 		log.Debug(cmd.Env)
 
-		var stdout, stderr bytes.Buffer
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stderr
+		stdout, err := cmd.StdoutPipe()
 
-		err = cmd.Run()
 		if err != nil {
-			log.Error("cmd.Run: %s failed: %s\n", err)
+			log.Error(err)
 		}
-		outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
-		if len(errStr) > 1 {
-			log.Print("out:\n%s\nerr:\n%s\n", outStr, errStr)
+
+		err = cmd.Start()
+		if err != nil {
+			log.Error(err)
 		}
-		log.Debug(outStr)
+
+		scanner := bufio.NewScanner(stdout)
+		for scanner.Scan() {
+			m := scanner.Text()
+			log.Debug(m)
+		}
+		cmd.Wait()
 	}
 	return
 }
 
-// not used right now, in the future, update config with this function dynamically
+type ChanStruct struct {
+	chMessages chan string
+}
+
+func (t *ChanStruct) stop() {
+	return
+}
+
+var T ChanStruct
+
+// start stress test
 func (s *server) StartStressTest(ctx context.Context, in *pb.TestRequest) (*pb.TestReply, error) {
-	go startStressTest(in)
+	go T.startStressTest(in)
 	return &pb.TestReply{Status: in.S3Key + " stress-test started"}, nil
 }
 
@@ -163,6 +182,7 @@ func (s *server) StartStressTest(ctx context.Context, in *pb.TestRequest) (*pb.T
 // }
 
 func init() {
+	T.chMessages = make(chan string)
 	// open config.json defined by protobuf
 	jsonFile, err := os.Open("config.json")
 	if err != nil {
@@ -190,6 +210,9 @@ func init() {
 }
 
 func main() {
+
+	// T.chMessages <- "some string"
+
 	lis, err := net.Listen("tcp", ":"+strconv.FormatInt(int64(StressTestLoaderConfig.ListenPort), 10))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

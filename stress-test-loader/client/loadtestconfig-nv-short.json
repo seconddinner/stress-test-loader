@@ -1,6 +1,6 @@
 {
     "s3": "cubestressclientartifactbucket-sd",
-    "s3key": "cli-mac-rec-nvstress.tgz",
+    "s3key": "cli-mv.tgz",
     "loadtestExec": "CubeInfra.ProtocolTest.Cli",
     "envVariableList": [
         {
@@ -21,7 +21,7 @@
         }
     ],
     "stepTestStart": 5,
-    "stepTestEnd": 5,
-    "stepTestStep": 5,
+    "stepTestEnd": 15,
+    "stepTestStep": 10,
     "stepTestSleepSeconds": 300
 }
