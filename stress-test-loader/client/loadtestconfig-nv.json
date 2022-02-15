@@ -1,6 +1,6 @@
 {
     "s3": "cubestressclientartifactbucket-sd",
-    "s3key": "cli-mv-reconnect.tgz",
+    "s3key": "cli-mv-reconnect-debug-v2-2.tgz",
     "loadtestExec": "CubeInfra.ProtocolTest.Cli",
     "envVariableList": [
         {
