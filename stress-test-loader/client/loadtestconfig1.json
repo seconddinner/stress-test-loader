@@ -19,9 +19,5 @@
             "EnvName": "NumberOfGamesToPlay",
             "EnvValue": "1"
         }
-    ],
-    "stepTestStart": 5,
-    "stepTestEnd": 205,
-    "stepTestStep": 10,
-    "stepTestSleepSeconds": 300
+    ]
 }

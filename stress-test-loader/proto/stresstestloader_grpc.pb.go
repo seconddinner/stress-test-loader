@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type StressTestLoaderClient interface {
 	// Sends a list of stresstest public ip to varify
 	StartStressTest(ctx context.Context, in *TestRequest, opts ...grpc.CallOption) (*TestReply, error)
+	StopStressTest(ctx context.Context, in *TestRequest, opts ...grpc.CallOption) (*TestReply, error)
 }
 
 type stressTestLoaderClient struct {
@@ -39,12 +40,22 @@ func (c *stressTestLoaderClient) StartStressTest(ctx context.Context, in *TestRe
 	return out, nil
 }
 
+func (c *stressTestLoaderClient) StopStressTest(ctx context.Context, in *TestRequest, opts ...grpc.CallOption) (*TestReply, error) {
+	out := new(TestReply)
+	err := c.cc.Invoke(ctx, "/stresstestloader.StressTestLoader/StopStressTest", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StressTestLoaderServer is the server API for StressTestLoader service.
 // All implementations must embed UnimplementedStressTestLoaderServer
 // for forward compatibility
 type StressTestLoaderServer interface {
 	// Sends a list of stresstest public ip to varify
 	StartStressTest(context.Context, *TestRequest) (*TestReply, error)
+	StopStressTest(context.Context, *TestRequest) (*TestReply, error)
 	mustEmbedUnimplementedStressTestLoaderServer()
 }
 
@@ -54,6 +65,9 @@ type UnimplementedStressTestLoaderServer struct {
 
 func (UnimplementedStressTestLoaderServer) StartStressTest(context.Context, *TestRequest) (*TestReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartStressTest not implemented")
+}
+func (UnimplementedStressTestLoaderServer) StopStressTest(context.Context, *TestRequest) (*TestReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StopStressTest not implemented")
 }
 func (UnimplementedStressTestLoaderServer) mustEmbedUnimplementedStressTestLoaderServer() {}
 
@@ -86,6 +100,24 @@ func _StressTestLoader_StartStressTest_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StressTestLoader_StopStressTest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StressTestLoaderServer).StopStressTest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/stresstestloader.StressTestLoader/StopStressTest",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StressTestLoaderServer).StopStressTest(ctx, req.(*TestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StressTestLoader_ServiceDesc is the grpc.ServiceDesc for StressTestLoader service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -96,6 +128,10 @@ var StressTestLoader_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StartStressTest",
 			Handler:    _StressTestLoader_StartStressTest_Handler,
+		},
+		{
+			MethodName: "StopStressTest",
+			Handler:    _StressTestLoader_StopStressTest_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

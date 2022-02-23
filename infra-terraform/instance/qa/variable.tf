@@ -24,12 +24,12 @@ variable "asg_min" {
 
 variable "asg_max" {
   description = ""
-  default     = 120
+  default     = 500
 }
 
 variable "asg_desired" {
   description = ""
-  default     = 100
+  default     = 500
 }
 
 variable "instance_type" {
@@ -63,5 +63,5 @@ variable "stress_test_loader_allowed_cidr" {
 }
 
 variable "owner_id" {
-  default = "275684003332"
+  default = "387069771834"
 }

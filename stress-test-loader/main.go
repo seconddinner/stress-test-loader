@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
@@ -59,16 +58,6 @@ func copyStressTest(in *pb.TestRequest) (err error) {
 	}
 	defer file.Close()
 
-	// use this to check if file exist
-	// svc := s3.New(session.New(&aws.Config{
-	// 	Region: aws.String("us-west-2")}))
-
-	// input := &s3.HeadObjectInput{
-	// 	Bucket: aws.String(in.S3),
-	// 	Key:    aws.String(in.S3Key),
-	// }
-	// result, err := svc.GetObjectTagging(input)
-
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-west-2")},
 	)
@@ -114,6 +103,14 @@ func copyStressTest(in *pb.TestRequest) (err error) {
 	log.Print(outStr)
 	return
 }
+func (t *ChanStruct) stopStressTest(in *pb.TestRequest) (err error) {
+	log.Print("stop stress")
+
+	if err := t.cmd.Process.Kill(); err != nil {
+		log.Error("failed to kill process: ", err)
+	}
+	return
+}
 
 func (t *ChanStruct) startStressTest(in *pb.TestRequest) (err error) {
 	log.Print(in)
@@ -126,43 +123,61 @@ func (t *ChanStruct) startStressTest(in *pb.TestRequest) (err error) {
 
 	// log.Print(mst)
 
-	for i := in.StepTestStart; i <= in.StepTestEnd; i = in.StepTestStep + i {
-		log.Printf("NumberOfClients %d", i)
-
-		cmd := exec.Command(StressTestLoaderConfig.WorkingFolder + "/bin" + "/" + in.LoadtestExec)
-		cmd.Env = os.Environ()
-		for _, s := range in.EnvVariableList {
-			if s.EnvName != "NumberOfClients" {
-				cmd.Env = append(cmd.Env, s.EnvName+"="+s.EnvValue)
-			} else {
-				cmd.Env = append(cmd.Env, "NumberOfClients="+fmt.Sprintf("%d", i))
-			}
-		}
-		log.Debug(cmd.Env)
-
-		stdout, err := cmd.StdoutPipe()
-
-		if err != nil {
-			log.Error(err)
-		}
-
-		err = cmd.Start()
-		if err != nil {
-			log.Error(err)
-		}
-
-		scanner := bufio.NewScanner(stdout)
-		for scanner.Scan() {
-			m := scanner.Text()
-			log.Debug(m)
-		}
-		cmd.Wait()
+	t.cmd = exec.Command(StressTestLoaderConfig.WorkingFolder + "/bin" + "/" + in.LoadtestExec)
+	t.cmd.Env = os.Environ()
+	for _, s := range in.EnvVariableList {
+		t.cmd.Env = append(t.cmd.Env, s.EnvName+"="+s.EnvValue)
 	}
+	log.Debug(t.cmd.Env)
+
+	stdout, err := t.cmd.StdoutPipe()
+
+	if err != nil {
+		log.Error(err)
+	}
+	stderr, err := t.cmd.StderrPipe()
+
+	if err != nil {
+		log.Error(err)
+	}
+
+	err = t.cmd.Start()
+	if err != nil {
+		log.Error(err)
+	}
+
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		m := scanner.Text()
+		log.Debug(m)
+	}
+
+	scannerErr := bufio.NewScanner(stderr)
+	for scannerErr.Scan() {
+		m := scanner.Text()
+		log.Error(m)
+	}
+	t.cmd.Wait()
+	// var stdoutBuf, stderrBuf bytes.Buffer
+	// cmd.Stdout = io.MultiWriter(os.Stdout, &stdoutBuf)
+	// cmd.Stderr = io.MultiWriter(os.Stderr, &stderrBuf)
+
+	// err = cmd.Run()
+	// if err != nil {
+	// 	log.Error("cmd.Run() failed with %s\n", err)
+	// }
+
+	// outStr, errStr := string(stdoutBuf.Bytes()), string(stderrBuf.Bytes())
+	// fmt.Printf("\nout:\n%s\nerr:\n%s\n", outStr, errStr)
+
+	// log.Print("Finished this run")
+	log.Printf("%s finished by stress-test-loader", in.S3Key)
 	return
 }
 
 type ChanStruct struct {
 	chMessages chan string
+	cmd        *exec.Cmd
 }
 
 func (t *ChanStruct) stop() {
@@ -175,6 +190,12 @@ var T ChanStruct
 func (s *server) StartStressTest(ctx context.Context, in *pb.TestRequest) (*pb.TestReply, error) {
 	go T.startStressTest(in)
 	return &pb.TestReply{Status: in.S3Key + " stress-test started"}, nil
+}
+
+// stop stress test
+func (s *server) StopStressTest(ctx context.Context, in *pb.TestRequest) (*pb.TestReply, error) {
+	T.stopStressTest(in)
+	return &pb.TestReply{Status: in.S3Key + " stress-test stopped"}, nil
 }
 
 // func (s *server) SayHelloAgain(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {

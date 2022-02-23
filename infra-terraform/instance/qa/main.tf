@@ -18,7 +18,7 @@ terraform {
 
   backend "s3" {
 
-    bucket = "terraform-stress-test-sd"
+    bucket = "terraform-nvstress-test-sd"
     key    = "qa-stl"
     region = "us-west-2"
   }

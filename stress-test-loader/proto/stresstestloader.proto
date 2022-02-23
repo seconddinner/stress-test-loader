@@ -9,7 +9,9 @@ package stresstestloader;
 service StressTestLoader {
   // Sends a list of stresstest public ip to varify
   rpc StartStressTest(TestRequest) returns (TestReply) {}
+  rpc StopStressTest(TestRequest) returns (TestReply) {}
 }
+
 
 message EnvVariable {
   string EnvName = 1;
@@ -24,10 +26,6 @@ message TestRequest {
   // will add   bool runUntilStoped ;
   int32 numberOfGames = 4;
   string s3key = 5;
-  int32 stepTestStart = 6;
-  int32 stepTestEnd = 7;
-  int32 stepTestStep = 8;
-  int32 stepTestSleepSeconds = 9;
 }
 
 message StressTestConfig {

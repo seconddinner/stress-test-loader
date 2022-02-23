@@ -1,6 +1,6 @@
 {
-    "s3": "cubestressclientartifactbucket-sd",
-    "s3key": "cli-mv-reconnect-mac-debug-v2.tgz",
+    "s3": "cubestressclientartifactbucket-nv",
+    "s3key": "nvstress-client-with-step-mac.tgz",
     "loadtestExec": "CubeInfra.ProtocolTest.Cli",
     "envVariableList": [
         {
@@ -13,15 +13,15 @@
         },
         {
             "EnvName": "NumberOfClients",
-            "EnvValue": "1"
+            "EnvValue": "2"
         },
         {
-            "EnvName": "NumberOfGamesToPlay",
-            "EnvValue": "1"
+            "EnvName": "StepTestStart",
+            "EnvValue": "30"
+        },
+        {
+            "EnvName": "StepTestEnd",
+            "EnvValue": "10"
         }
-    ],
-    "stepTestStart": 35,
-    "stepTestEnd": 100,
-    "stepTestStep": 5,
-    "stepTestSleepSeconds": 300
+    ]
 }

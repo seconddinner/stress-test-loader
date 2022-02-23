@@ -53,3 +53,6 @@ override.tf.json
 .terraformrc
 terraform.rc
 .terraform.lock.hcl
+
+client/client
+.DS_Store
