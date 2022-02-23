@@ -86,7 +86,7 @@ func main() {
 				if err != nil {
 					log.Error("could not greet: %v", err)
 				}
-				log.Printf("Greeting: %s", r.GetStatus())
+				log.Printf("%s", r.GetStatus())
 
 			}
 		}
@@ -109,7 +109,7 @@ func main() {
 				if err != nil {
 					log.Error("could not greet: %v", err)
 				}
-				log.Printf("Greeting: %s", r.GetStatus())
+				log.Printf("%s", r.GetStatus())
 
 			}
 

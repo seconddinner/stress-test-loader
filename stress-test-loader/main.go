@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
@@ -103,25 +104,24 @@ func copyStressTest(in *pb.TestRequest) (err error) {
 	log.Print(outStr)
 	return
 }
-func (t *ChanStruct) stopStressTest(in *pb.TestRequest) (err error) {
-	log.Print("stop stress")
+func (t *ChanStruct) stopStressTest(in *pb.TestRequest) (err error, msg string) {
 
 	if err := t.cmd.Process.Kill(); err != nil {
-		log.Error("failed to kill process: ", err)
+		msg = fmt.Sprintf("failed to kill process: ", err)
+	} else {
+		msg = fmt.Sprintf("Successfully stopped the stresstest process!")
+		t.running = false
 	}
 	return
 }
 
 func (t *ChanStruct) startStressTest(in *pb.TestRequest) (err error) {
+	t.running = true
 	log.Print(in)
 	err = copyStressTest(in)
 	if err != nil {
 		return
 	}
-
-	// mst := <-t.chMessages
-
-	// log.Print(mst)
 
 	t.cmd = exec.Command(StressTestLoaderConfig.WorkingFolder + "/bin" + "/" + in.LoadtestExec)
 	t.cmd.Env = os.Environ()
@@ -158,44 +158,34 @@ func (t *ChanStruct) startStressTest(in *pb.TestRequest) (err error) {
 		log.Error(m)
 	}
 	t.cmd.Wait()
-	// var stdoutBuf, stderrBuf bytes.Buffer
-	// cmd.Stdout = io.MultiWriter(os.Stdout, &stdoutBuf)
-	// cmd.Stderr = io.MultiWriter(os.Stderr, &stderrBuf)
-
-	// err = cmd.Run()
-	// if err != nil {
-	// 	log.Error("cmd.Run() failed with %s\n", err)
-	// }
-
-	// outStr, errStr := string(stdoutBuf.Bytes()), string(stderrBuf.Bytes())
-	// fmt.Printf("\nout:\n%s\nerr:\n%s\n", outStr, errStr)
-
-	// log.Print("Finished this run")
 	log.Printf("%s finished by stress-test-loader", in.S3Key)
+	t.running = false
 	return
 }
 
 type ChanStruct struct {
-	chMessages chan string
-	cmd        *exec.Cmd
-}
-
-func (t *ChanStruct) stop() {
-	return
+	running bool
+	cmd     *exec.Cmd
 }
 
 var T ChanStruct
 
 // start stress test
 func (s *server) StartStressTest(ctx context.Context, in *pb.TestRequest) (*pb.TestReply, error) {
-	go T.startStressTest(in)
-	return &pb.TestReply{Status: in.S3Key + " stress-test started"}, nil
+	var msg string
+	if T.running == false {
+		go T.startStressTest(in)
+		msg = " stress-test started"
+	} else {
+		msg = " A STRESSTEST is RUNNING on the vm, please use \"-s\" flag to stop it before running another stress test!"
+	}
+	return &pb.TestReply{Status: in.S3Key + msg}, nil
 }
 
 // stop stress test
 func (s *server) StopStressTest(ctx context.Context, in *pb.TestRequest) (*pb.TestReply, error) {
-	T.stopStressTest(in)
-	return &pb.TestReply{Status: in.S3Key + " stress-test stopped"}, nil
+	err, msg := T.stopStressTest(in)
+	return &pb.TestReply{Status: msg}, err
 }
 
 // func (s *server) SayHelloAgain(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
@@ -203,7 +193,7 @@ func (s *server) StopStressTest(ctx context.Context, in *pb.TestRequest) (*pb.Te
 // }
 
 func init() {
-	T.chMessages = make(chan string)
+	T.running = false
 	// open config.json defined by protobuf
 	jsonFile, err := os.Open("config.json")
 	if err != nil {
