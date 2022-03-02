@@ -13,7 +13,7 @@
         },
         {
             "EnvName": "NumberOfClients",
-            "EnvValue": "2"
+            "EnvValue": "5"
         },
         {
             "EnvName": "StepTestStart",
