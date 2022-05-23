@@ -71,7 +71,7 @@ func main() {
 		for _, s := range ipList {
 			for _, s2 := range s {
 				fmt.Println(s2.PublicIP)
-				ctx, cancel := context.WithTimeout(context.Background(), 3000*time.Second)
+				ctx, cancel := context.WithTimeout(context.Background(), 2000*time.Second)
 				conn, err := grpc.DialContext(ctx, s2.PublicIP+":"+port, grpc.WithInsecure())
 				if err != nil {
 					log.Println("Dial failed!")
@@ -94,7 +94,7 @@ func main() {
 		for _, s := range ipList {
 			for _, s2 := range s {
 				fmt.Println(s2.PublicIP)
-				ctx, cancel := context.WithTimeout(context.Background(), 3000*time.Second)
+				ctx, cancel := context.WithTimeout(context.Background(), 2000*time.Second)
 				conn, err := grpc.DialContext(ctx, s2.PublicIP+":"+port, grpc.WithInsecure())
 				if err != nil {
 					log.Println("Dial failed!")

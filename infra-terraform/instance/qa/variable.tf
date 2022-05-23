@@ -3,7 +3,8 @@
 variable "aws_region" {
   description = "AWS region for all resources."
 
-  type    = string
+  type = string
+  # default = "ap-southeast-1"
   default = "us-west-2"
 }
 
@@ -19,7 +20,7 @@ variable "az_count" {
 
 variable "asg_min" {
   description = ""
-  default     = 2
+  default     = 1
 }
 
 variable "asg_max" {
@@ -29,7 +30,7 @@ variable "asg_max" {
 
 variable "asg_desired" {
   description = ""
-  default     = 100
+  default     = 200
 }
 
 variable "instance_type" {
@@ -59,7 +60,7 @@ variable "PNS_version" {
 
 variable "stress_test_loader_allowed_cidr" {
   type    = list(string)
-  default = ["47.154.122.36/32"]
+  default = ["47.154.124.118/32"]
 }
 
 variable "owner_id" {

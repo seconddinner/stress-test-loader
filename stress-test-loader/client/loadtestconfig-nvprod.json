@@ -1,11 +1,11 @@
 {
     "s3": "cubestressclientartifactbucket-nv",
-    "s3key": "nvstress-client-202.tgz",
+    "s3key": "nvprod-cf-domain-auto-v4.tgz",
     "loadtestExec": "CubeInfra.ProtocolTest.Cli",
     "envVariableList": [
         {
             "EnvName": "TargetEnvironment",
-            "EnvValue": "nvstress"
+            "EnvValue": "nvprod"
         },
         {
             "EnvName": "TargetAppRegion",

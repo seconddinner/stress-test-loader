@@ -86,6 +86,7 @@ module "autoscale" {
   aws_ami_id                      = data.aws_ami.stl.id
   user_data                       = local.user_data
   stress_test_loader_allowed_cidr = var.stress_test_loader_allowed_cidr
+  ssh_allowed_cidr                = var.stress_test_loader_allowed_cidr
   extra_tags = {
     "type" = "stress_test_loader"
   }
