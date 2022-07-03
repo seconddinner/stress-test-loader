@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3"
+      version = "~> 4"
     }
     random = {
       source  = "hashicorp/random"
@@ -17,7 +17,6 @@ terraform {
   required_version = "~> 1.0"
 
   backend "s3" {
-
     bucket = "terraform-nvstress-test-sd"
     key    = "qa-stl"
     region = "us-west-2"

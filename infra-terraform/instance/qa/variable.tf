@@ -25,12 +25,12 @@ variable "asg_min" {
 
 variable "asg_max" {
   description = ""
-  default     = 500
+  default     = 800
 }
 
 variable "asg_desired" {
   description = ""
-  default     = 200
+  default     = 650
 }
 
 variable "instance_type" {

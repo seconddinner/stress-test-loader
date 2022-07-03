@@ -72,6 +72,5 @@ variable "PNS_version" {
 }
 
 variable "stress_test_loader_allowed_cidr" {
-  type    = list(string)
-  default = ["47.154.122.36/32"]
+  type = list(string)
 }
