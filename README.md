@@ -1,8 +1,8 @@
-# [Second Dinner](https://seconddinner.com/) stress-test loader
+# [Second Dinner](https://seconddinner.com/) stress-test-loader
 
-This is how Second dinner stress test our platform. We want to open source this code to contribute to development community. 
+This is [Second Dinner](https://seconddinner.com/) stress-test-loader. We want to open source this code to contribute to development community. 
 
-Current setup is targeted AWS, but it can be target other clouds if needed. 
+Current setup is targeted AWS, but it can be ported other clouds if needed. 
 
 Current dir structure have:
 
@@ -45,7 +45,7 @@ Once you created an AWS ami for stress-test, you can use Infra-terraform to crea
 1. ```terraform apply```
 1. If everything worked according to plan, you will see message like ``` Apply complete! Resources: XX added, XX changed, XX destroyed ```
 
-## Running the stress test using stresstest loader
+## Running the stress test using stress-test-loader
 
 ### Create stresstest client json
 * build your stress test client to an arm64 executable, this can be a directory with libraries and one entry executable. Executable can take any number environment variable as configuration. We are going to use ```stress-test-client``` as an example
