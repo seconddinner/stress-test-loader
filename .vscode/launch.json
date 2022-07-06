@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "server",
+            "program": "${workspaceRoot}/stress-test-loader",
+        },
+        {
+            "name": "client",
+            "program": "${workspaceRoot}/stress-test-loader/client",
+            "args": [
+                "${workspaceRoot}/stress-test-loader/client/testconfig/loadtestconfig-nv.json",
+                "/tmp/test.json"
+            ]
+        }
+    ]
+}

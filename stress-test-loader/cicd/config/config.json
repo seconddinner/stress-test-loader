@@ -1,0 +1,5 @@
+{
+    "DebugL": 5,
+    "listenPort": 9005,
+    "workingFolder": "/usr/local/stress-test"
+}

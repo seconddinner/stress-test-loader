@@ -1,0 +1,48 @@
+
+syntax = "proto3";
+
+option go_package = "github.com/seconddinner/stress-test/stress-test-loader/stresstestloader";
+
+package stresstestloader;
+
+// The StartStressTest service definition.
+service StressTestLoader {
+  // Sends a list of stresstest public ip to varify
+  rpc StartStressTest(TestRequest) returns (TestReply) {}
+  rpc StopStressTest(TestRequest) returns (TestReply) {}
+}
+
+
+message EnvVariable {
+  string EnvName = 1;
+  string EnvValue = 2;
+}
+
+// The request to StartStressTest
+message TestRequest {
+  string loadtestExec = 1;
+  string s3 = 2;
+  repeated EnvVariable envVariableList = 3;
+  // will add   bool runUntilStoped ;
+  int32 numberOfGames = 4;
+  string s3key = 5;
+}
+
+message StressTestConfig {
+  string workingFolder = 1;
+  enum DebugLevelEnum {
+    PanicLevel = 0;
+  	FatalLevel = 1;
+	  ErrorLevel = 2;
+  	WarnLevel = 3;
+  	InfoLevel = 4;
+  	DebugLevel = 5;
+  	TraceLevel = 6;
+  }
+  optional DebugLevelEnum debugL = 4;
+  int32 listenPort = 5;
+}
+// The response for the StartStressTest
+message TestReply {
+  string status = 1;
+}
