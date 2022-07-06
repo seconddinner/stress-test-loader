@@ -1,1 +1,1 @@
-this is stress-test page
+this is stress-test-loader test page.
