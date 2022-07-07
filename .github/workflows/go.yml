@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     container: golang:1.17
     steps:
+    - uses: actions/checkout@v3
 
     - name: Build
       run: pwd; find . ; 
