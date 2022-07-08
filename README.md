@@ -1,16 +1,16 @@
 # [Second Dinner](https://seconddinner.com/) stress-test-loader
 
-This is [Second Dinner](https://seconddinner.com/) stress-test-loader. We want to open source this code to contribute to development community. 
+This is the [Second Dinner](https://seconddinner.com/) stress-test-loader. It is a small golang application for executing stress tests, plus some infra things (packer, terraform, etc) to deploy it to the cloud. We have open-sourced this code to contribute to development community. 
 
-Current setup is targeted AWS, but it can be ported other clouds if needed. 
+Currently, this setup targets AWS, but it can be ported other clouds if needed. 
 
-Current dir structure have:
+Directory structure:
 
-* stress-test-loader (golang service that can load any stress-test-client, the dir also create AWS ami that allow user to create hundreds of loadtest ec2 instances)
+* stress-test-loader (golang service that can load any stress-test-client, plus packer templates for creating AMIs)
 
-* infra-terraform. terraform code that allow folks to AWS ami to create stress-test-loader ec2 instances)
+* infra-terraform (terraform config for deploying AMIs to create stress-test-loader ec2 instances)
 
-## requirement:
+## Requirements
 
 1. [golang](https://go.dev/doc/install).
 1. [hashicorp packer](https://www.packer.io/downloads).
@@ -20,11 +20,11 @@ Current dir structure have:
 
 ## stress-test-loader
 
-To take advantage of [AWS arm64 offering](https://aws.amazon.com/ec2/graviton/), we are building the golang executable and packer ami image all in arm64 format.
+To take advantage of [AWS arm64 offering](https://aws.amazon.com/ec2/graviton/), we are building the golang executable and packer AMI image all in arm64 format.
 
-Here is brief process of building stress-test-loader ami.
+The following example demonstrates building the stress-test-loader ami.
 
-### generate ami
+### Generate AMI
 
 1. ``` cd stress-test-loader ```
 1. ``` source cicd/ami/build-stress-test-loader.sh ```
@@ -32,7 +32,7 @@ Here is brief process of building stress-test-loader ami.
 
 ## Infra-terraform
 
-Once you created an AWS ami for stress-test, you can use Infra-terraform to create EC2 instance and create as many EC2 instances as your AWS accounts allowed.
+Once you have created an AWS AMI for stress-test, you can use Infra-terraform to create EC2 instance and create as many EC2 instances as your AWS account allows.
 
 ### terraform stress infrastructure 
 
@@ -48,9 +48,9 @@ Once you created an AWS ami for stress-test, you can use Infra-terraform to crea
 ## Running the stress test using stress-test-loader
 
 ### Create stresstest client json
-* build your stress test client to an arm64 executable, this can be a directory with libraries and one entry executable. Executable can take any number environment variable as configuration. We are going to use ```stress-test-client``` as an example
+* build your stress test client as an arm64 executable, this can be a directory with libraries and one entry executable. The executable can take any number of environment variable as configuration. We are going to use ```stress-test-client``` as an example
 * ```tar cvzf stress-test-client```
-* copy the tgz file to a S3 bucket ```aws s3 cp  stress-test-client.tgz   s3://stress-test-client-s3/stress-test-client.tgz```
+* copy the tgz file to an S3 bucket ```aws s3 cp  stress-test-client.tgz   s3://stress-test-client-s3/stress-test-client.tgz```
 * build a stress-test-loader config json. For example `stresstest.json` 
 ```
 {
@@ -69,7 +69,7 @@ Once you created an AWS ami for stress-test, you can use Infra-terraform to crea
     ]
 }
 ```
-* export all of the ec2 instances public IP address ```aws ec2 describe-instances --region us-west-2   --query 'Reservations[*].Instances[*].{"public_ip":PublicIpAddress}' --filters Name=instance-state-name,Values=running --output json     > /tmp/IP.json```
+* export all of the ec2 instances' public IP addresses ```aws ec2 describe-instances --region us-west-2   --query 'Reservations[*].Instances[*].{"public_ip":PublicIpAddress}' --filters Name=instance-state-name,Values=running --output json     > /tmp/IP.json```
 * run stress test ``` cd stress-test-loader/client; go run main.go stresstest.json /tmp/IP.json```
-* if you gave a ssh public key, you can ssh into the ec2 instance and check log ```journal-ctl -f -u stress*```
+* if you gave an ssh public key, you can ssh into the ec2 instance and check its systemd service log ```journalctl -f -u stress*```
 
