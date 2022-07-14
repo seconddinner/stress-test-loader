@@ -14,11 +14,11 @@ jobs:
     #container: golang:1.17
     steps:
     - uses: actions/checkout@v3
-
-    - name: Build
-      run: pwd; find . ; 
       
     - name: Go build
       run: cd stress-test-loader; go build -v ./...
+
+    - name: build.sh
+      run: source ./build.sh
 
   
