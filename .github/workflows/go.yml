@@ -10,7 +10,8 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    container: seconddinner/build:0.0.1
+    # container: seconddinner/build:0.0.1
+    container: go/1.17
     steps:
     - uses: actions/checkout@v3
 
