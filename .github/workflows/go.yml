@@ -15,13 +15,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       
-    - name: Go build
-      run: cd stress-test-loader; go build -v ./...
+    # - name: Go build
+    #   run: cd stress-test-loader; go build -v ./...
 
     - name: pwd
-      run: pwd;
-       
+      run: pwd; pwd "${GITHUB_ACTION_PATH}""
+
     - name: build.sh
-      run: ./build.sh
+      run: source ${GITHUB_ACTION_PATH}/stess-test-loader/build.sh
 
   
