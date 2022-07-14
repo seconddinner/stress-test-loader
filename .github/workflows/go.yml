@@ -19,6 +19,6 @@ jobs:
       run: cd stress-test-loader; go build -v ./...
 
     - name: build.sh
-      run: source ./build.sh
+      run: pwd; source ./build.sh
 
   
