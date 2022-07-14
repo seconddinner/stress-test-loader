@@ -2,9 +2,9 @@ name: Go
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", build-container ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", build-container ]
 
 jobs:
 
@@ -20,3 +20,4 @@ jobs:
     - name: Go build
       run: cd stress-test-loader; go build -v ./...
 
+  
