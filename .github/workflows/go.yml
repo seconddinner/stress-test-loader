@@ -19,7 +19,7 @@ jobs:
     #   run: cd stress-test-loader; go build -v ./...
 
     - name: pwd
-      run: pwd; pwd "${GITHUB_ACTION_PATH}""
+      run: pwd "${HOME}""
 
     - name: build.sh
       run: source ${GITHUB_ACTION_PATH}/stess-test-loader/build.sh
