@@ -18,10 +18,8 @@ jobs:
     # - name: Go build
     #   run: cd stress-test-loader; go build -v ./...
 
-    - name: pwd
-      run: pwd "${HOME}""
 
     - name: build.sh
-      run: source ${GITHUB_ACTION_PATH}/stess-test-loader/build.sh
+      run: cd ${GITHUB_WORKSPACE}/stess-test-loader; bash ${GITHUB_WORKSPACE}/stess-test-loader/build.sh
 
   
