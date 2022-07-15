@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #### build grpc_health_probe
-protoc  --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_out=. --go_opt=paths=source_relative   proto/stresstestloader.proto
+protoc  --experimental_allow_proto3_optional --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_out=. --go_opt=paths=source_relative   proto/stresstestloader.proto
 
 VERSION=`git describe --tags --long`
 

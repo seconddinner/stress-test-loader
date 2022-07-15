@@ -2,20 +2,24 @@ name: Go
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", build-container ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", build-container ]
 
 jobs:
 
   build:
     runs-on: ubuntu-latest
-    container: golang:1.17
+    container: seconddinner/build:0.0.1
+    #container: golang:1.17
     steps:
     - uses: actions/checkout@v3
-
-    - name: Build
-      run: pwd; find . ; 
       
-    - name: Go build
-      run: cd stress-test-loader; go build -v ./...
+    # - name: Go build
+    #   run: cd stress-test-loader; go build -v ./...
+
+
+    - name: build.sh
+      run: cd stress-test-loader; bash ./build.sh
+
+  
