@@ -20,6 +20,6 @@ jobs:
 
 
     - name: build.sh
-      run: cd stress-test-loader; bash ${GITHUB_WORKSPACE}/stess-test-loader/build.sh
+      run: cd stress-test-loader; bash ./build.sh
 
   
