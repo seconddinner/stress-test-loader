@@ -1,6 +1,6 @@
-# [Second Dinner](https://seconddinner.com/) stress-test-loader
+# [Second Dinner](https://seconddinner.com/work-together-at-second-dinner/) stress-test-loader
 
-This is the [Second Dinner](https://seconddinner.com/) stress-test-loader. It is a small golang application for executing stress tests, plus some infra things (packer, terraform, etc) to deploy it to the cloud. We have open-sourced this code to contribute to development community. 
+This is the [Second Dinner](https://seconddinner.com/work-together-at-second-dinner/) stress-test-loader. It is a small golang application for executing stress tests, plus some infra things (packer, terraform, etc) to deploy it to the cloud. We have open-sourced this code to contribute to development community. 
 
 Currently, this setup targets AWS, but it can be ported other clouds if needed. 
 
