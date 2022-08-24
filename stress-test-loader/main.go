@@ -17,6 +17,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 
@@ -220,10 +221,47 @@ func init() {
 
 }
 
+func InjectEC2env() {
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("us-west-2")},
+	)
+	svc := ec2.New(sess)
+	result, err := svc.DescribeAddresses(&ec2.DescribeAddressesInput{
+		Filters: []*ec2.Filter{
+			{
+				Name:   aws.String("domain"),
+				Values: aws.StringSlice([]string{"vpc"}),
+			},
+		},
+	})
+	if err != nil {
+		log.Error("Unable to elastic IP address, %v", err)
+	}
+
+	// Printout the IP addresses if there are any.
+	if len(result.Addresses) == 0 {
+		fmt.Printf("No elastic IPs for %s region\n", *svc.Config.Region)
+	} else {
+		fmt.Println("Elastic IPs")
+		for _, addr := range result.Addresses {
+			fmt.Println("*", fmtAddress(addr))
+		}
+	}
+}
+
+func fmtAddress(addr *ec2.Address) string {
+	out := fmt.Sprintf("IP: %s,  allocation id: %s",
+		aws.StringValue(addr.PublicIp), aws.StringValue(addr.AllocationId))
+	if addr.InstanceId != nil {
+		out += fmt.Sprintf(", instance-id: %s", *addr.InstanceId)
+	}
+	return out
+}
+
 func main() {
 
 	// T.chMessages <- "some string"
-
+	InjectEC2env()
 	lis, err := net.Listen("tcp", ":"+strconv.FormatInt(int64(StressTestLoaderConfig.ListenPort), 10))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
