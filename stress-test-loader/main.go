@@ -9,15 +9,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
+	"time"
 
 	pb "stress-test-loader/proto"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 
@@ -29,6 +30,8 @@ import (
 var Version = "notset"
 
 var StressTestLoaderConfig pb.StressTestConfig
+
+var ServerIPAddress string
 
 type server struct {
 	pb.StressTestLoaderServer
@@ -54,6 +57,7 @@ func ensureDir(dirName string) error {
 }
 
 func copyStressTest(in *pb.TestRequest) (err error) {
+	log.Debug(in.TimeStamp)
 	file, err := os.Create(StressTestLoaderConfig.WorkingFolder + "/" + in.S3Key)
 	if err != nil {
 		log.Error("Unable to open file %q, %v", in.S3Key, err)
@@ -116,6 +120,11 @@ func (t *ChanStruct) stopStressTest(in *pb.TestRequest) (err error, msg string) 
 	return
 }
 
+func (t *ChanStruct) addAWSS3setting(in *pb.TestRequest) (err error) {
+	t.cmd.Env = append(t.cmd.Env, "ErrorLogS3FileName="+ServerIPAddress)
+	t.cmd.Env = append(t.cmd.Env, "ErrorLogS3Path="+in.S3Key+"/"+in.TimeStamp)
+	return
+}
 func (t *ChanStruct) startStressTest(in *pb.TestRequest) (err error) {
 	t.running = true
 	log.Print(in)
@@ -129,7 +138,8 @@ func (t *ChanStruct) startStressTest(in *pb.TestRequest) (err error) {
 	for _, s := range in.EnvVariableList {
 		t.cmd.Env = append(t.cmd.Env, s.EnvName+"="+s.EnvValue)
 	}
-	log.Debug(t.cmd.Env)
+	t.addAWSS3setting(in)
+	log.Info(t.cmd.Env)
 
 	stdout, err := t.cmd.StdoutPipe()
 
@@ -221,47 +231,31 @@ func init() {
 
 }
 
-func InjectEC2env() {
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("us-west-2")},
-	)
-	svc := ec2.New(sess)
-	result, err := svc.DescribeAddresses(&ec2.DescribeAddressesInput{
-		Filters: []*ec2.Filter{
-			{
-				Name:   aws.String("domain"),
-				Values: aws.StringSlice([]string{"vpc"}),
-			},
-		},
-	})
-	if err != nil {
-		log.Error("Unable to elastic IP address, %v", err)
+func EC2Metadata() (IPAddress string) {
+	client := http.Client{
+		Timeout: 2 * time.Second,
 	}
 
-	// Printout the IP addresses if there are any.
-	if len(result.Addresses) == 0 {
-		fmt.Printf("No elastic IPs for %s region\n", *svc.Config.Region)
+	resp, err := client.Get("http://169.254.169.254/latest/meta-data/public-ipv4")
+	if err != nil {
+		log.Error(err)
+		return
 	} else {
-		fmt.Println("Elastic IPs")
-		for _, addr := range result.Addresses {
-			fmt.Println("*", fmtAddress(addr))
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Error(err)
+			return
+		} else {
+			IPAddress = string(body)
+			return
 		}
 	}
-}
-
-func fmtAddress(addr *ec2.Address) string {
-	out := fmt.Sprintf("IP: %s,  allocation id: %s",
-		aws.StringValue(addr.PublicIp), aws.StringValue(addr.AllocationId))
-	if addr.InstanceId != nil {
-		out += fmt.Sprintf(", instance-id: %s", *addr.InstanceId)
-	}
-	return out
+	return
 }
 
 func main() {
 
-	// T.chMessages <- "some string"
-	InjectEC2env()
+	ServerIPAddress = EC2Metadata()
 	lis, err := net.Listen("tcp", ":"+strconv.FormatInt(int64(StressTestLoaderConfig.ListenPort), 10))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

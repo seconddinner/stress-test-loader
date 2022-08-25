@@ -26,6 +26,7 @@ message TestRequest {
   // will add   bool runUntilStoped ;
   int32 numberOfGames = 4;
   string s3key = 5;
+  string timeStamp = 6; // allow test client to write error log to central s3 bucket path
 }
 
 message StressTestConfig {
