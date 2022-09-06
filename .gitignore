@@ -54,6 +54,7 @@ override.tf.json
 terraform.rc
 .terraform.lock.hcl
 .terraform
+terraform.plan
 
 stress-test-loader/client/client
 stress-test-loader/client/testconfig/*
