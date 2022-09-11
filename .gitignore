@@ -59,3 +59,6 @@ stress-test-loader/client/client
 stress-test-loader/client/testconfig/*
 infra-terraform/instance/.testscript/*
 .DS_Store
+stress-test-loader/__debug_bin
+stress-test-loader/client/__debug_bin
+stress-test-loader/stress-test-loader-linux.gz

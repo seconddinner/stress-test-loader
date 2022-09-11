@@ -55,7 +55,7 @@ build {
       "sudo mv /tmp/config/config.json /usr/local/stress-test-loader",
       "sudo mv /tmp/config/limits.conf /etc/security/limits.conf",
 
-      "sudo curl -SL -o /tmp/dotnet.tar.gz  https://download.visualstudio.microsoft.com/download/pr/d3aaa7cc-a603-4693-871b-53b1537a4319/5981099ca17a113b3ce1c080462c50ef/dotnet-sdk-3.1.416-linux-arm64.tar.gz ",
+      "sudo curl -SL -o /tmp/dotnet.tar.gz  https://download.visualstudio.microsoft.com/download/pr/901f7928-5479-4d32-a9e5-ba66162ca0e4/d00b935ec4dc79a27f5bde00712ed3d7/dotnet-sdk-6.0.400-linux-arm64.tar.gz ",
       "sudo mkdir -p /usr/share/dotnet",
       "sudo tar -zxf /tmp/dotnet.tar.gz -C /usr/share/dotnet",
       "sudo ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet",

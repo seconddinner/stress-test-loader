@@ -41,6 +41,13 @@ resource "aws_iam_role_policy" "stress_test_client_read" {
       ],
       "Effect": "Allow",
       "Resource": "arn:aws:s3:::cubestressclientartifactbucket-nv/*"
+    },
+    {
+      "Action": [
+        "s3:PutObject"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::cubestresstest-log/*"
     }
   ]
 }

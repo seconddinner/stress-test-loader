@@ -67,6 +67,7 @@ func main() {
 	if os.Args[1] != "-s" {
 		loadTestConfig = os.Args[1]
 		pbRequest = readStressTestConfig(loadTestConfig)
+		pbRequest.TimeStamp = time.Now().UTC().Format(time.RFC3339Nano)
 
 		for _, s := range ipList {
 			for _, s2 := range s {
