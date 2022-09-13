@@ -2,9 +2,7 @@
 
 variable "aws_region" {
   description = "AWS region for all resources."
-
   type = string
-  # default = "ap-southeast-1"
   default = "us-west-2"
 }
 
@@ -77,4 +75,9 @@ variable "esdomain" {
 
 variable "masterpassword" {
   type = string
+}
+
+variable "create_es_iam_service_linked_role" {
+  type = bool
+  default = true
 }

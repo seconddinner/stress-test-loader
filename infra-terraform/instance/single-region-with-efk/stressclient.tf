@@ -1,9 +1,6 @@
-
-
 resource "random_id" "id" {
   byte_length = 8
 }
-
 
 locals {
   PNS_version = var.PNS_version != "" ? (var.PNS_version) : (random_id.id.hex)
@@ -18,7 +15,6 @@ data "aws_ami" "stl" {
   }
   owners = ["${var.owner_id}"]
 }
-
 
 locals {
   user_data = templatefile(join("/", tolist([path.module, "user_data.sh"])), {

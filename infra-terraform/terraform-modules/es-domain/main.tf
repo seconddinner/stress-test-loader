@@ -11,8 +11,15 @@ data "aws_vpc" "self" {
   id = var.vpc_id
 }
 
-data "aws_subnet_ids" "self" {
-  vpc_id = var.vpc_id
+data "aws_subnets" "self" {
+  filter {
+    name = "vpc-id"
+    values = [data.aws_vpc.self.id]
+  }
+}
+
+locals {
+  subnet_ids = data.aws_subnets.self.ids
 }
 
 resource "aws_security_group" "es_sg" {
@@ -40,6 +47,7 @@ resource "aws_security_group" "es_sg" {
 }
 
 resource "aws_iam_service_linked_role" "es" {
+  count            = var.create_iam_service_linked_role ? 1 : 0
   aws_service_name = "es.amazonaws.com"
 }
 
@@ -65,12 +73,12 @@ resource "aws_elasticsearch_domain" "es" {
     volume_type = "gp3"
   }
 
+  # use the vpc_options when es domain needs to accepts the logs inside the vpc
   #vpc_options {
   #  subnet_ids = [
-  #    tolist(data.aws_subnet_ids.self.ids)[0],
-  #    tolist(data.aws_subnet_ids.self.ids)[1],
+  #    tolist(local.subnet_ids)[0],
+  #    tolist(local.subnet_ids)[1],
   #  ]
-#
   #  security_group_ids = [aws_security_group.es_sg.id]
   #}
 
@@ -90,9 +98,7 @@ resource "aws_elasticsearch_domain" "es" {
     master_user_options {
         master_user_name = var.masterusername
         master_user_password = var.masterpassword
-
     }
-
   }
   auto_tune_options {
     desired_state = "ENABLED"

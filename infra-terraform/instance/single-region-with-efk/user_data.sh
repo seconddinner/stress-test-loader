@@ -77,29 +77,38 @@ setup.ilm:
   ilm.enabled: false
 setup.template:
   enabled: true
-  name: snap-nvstresstest1-
-  pattern: snap-nvstresstest1-*
+  name: snap-nvstresstest-
+  pattern: snap-nvstresstest-*
   settings:
-    index.number_of_shards: 3
+    index.number_of_shards: 16
 filebeat.inputs:
-- type: syslog
-  protocol.udp:
-    host: "localhost:10514"
+- type: log
   enabled: true
+  tail_files: true
+  close_inactive: 5m
+  ignore_older: 10m
+  close_timeout: 1h
+  paths:
+    - /var/log/stresstest-client/stresstest-client*.log
   fields:
-    index: snap-nvstresstest1
-    environment: "${environment}"
-  multiline:
-    type: pattern
-    pattern: '^time=\"\d{4}'
-    negate: true
-    match: after
+    index: snap-nvstresstest
+  processors:
+  - decode_json_fields:
+      fields: ["message"]
+      target: "stressclient"
+  - timestamp:
+      field: stressclient.EndTime
+      target_field: stressclient.EndTimestamp
+      layouts:
+        - UNIX_MS
+      test:
+        - '1661403661761'
 output.elasticsearch:
   indices:
-  - index: snap-nvstresstest1-%%{+yyyy.MM.dd}
+  - index: snap-nvstresstest-%%{+yyyy.MM.dd}
     when.contains:
       fields:
-        index: snap-nvstresstest1
+        index: snap-nvstresstest
   hosts:
   - https://${es_point}:443
   username: stresstestadmin

@@ -8,6 +8,9 @@ data "aws_vpc" "self" {
   id = module.network.aws_vpc_id
 }
 
-data "aws_subnet_ids" "self" {
-  vpc_id = module.network.aws_vpc_id
+data "aws_subnets" "self" {
+  filter {
+    name = "vpc-id"
+    values = [module.network.aws_vpc_id]
+  }
 }
