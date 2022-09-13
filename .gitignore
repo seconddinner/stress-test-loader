@@ -58,5 +58,7 @@ terraform.plan
 
 stress-test-loader/client/client
 stress-test-loader/client/testconfig/*
+stress-test-loader/client/ip.json
+stress-test-loader/client/stresstest.json
 infra-terraform/instance/.testscript/*
 .DS_Store
