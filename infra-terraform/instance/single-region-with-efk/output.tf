@@ -5,15 +5,15 @@ output "aws_subnets" {
   value = module.network.aws_subnets
 }
 output "subnet_ids" {
-  value = tolist(data.aws_subnet_ids.self.ids)
+  value = data.aws_subnets.self.ids
 }
 output "es_point" {
   value = module.es-domain.es_point
 }
-output "kibana_endpoint" {
+output "es_kibana_endpoint" {
   value = module.es-domain.kibana_endpoint
 }
-output "masterusername" {
+output "es_masterusername" {
   value = module.es-domain.masterusername
 }
 output "stressclient_asg_name" {

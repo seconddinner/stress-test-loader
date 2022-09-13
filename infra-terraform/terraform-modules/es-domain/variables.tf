@@ -51,3 +51,8 @@ variable "masternode_count" {
   default = 3
 }
 
+variable "create_iam_service_linked_role" {
+  type = bool
+  default = true
+}
+
