@@ -10,17 +10,14 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    container: seconddinner/build:0.0.1
-    #container: golang:1.17
-    steps:
-    - uses: actions/checkout@v3
+    # container: seconddinner/build:0.0.1
+    # #container: golang:1.17
+    # steps:
+    # - uses: actions/checkout@v3
       
-    # - name: Go build
-    #   run: cd stress-test-loader; go build -v ./...
 
-
-    - name: build.sh
-      run: cd stress-test-loader; bash ./build.sh
+    # - name: build.sh
+    #   run: cd stress-test-loader; bash ./build.sh
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
