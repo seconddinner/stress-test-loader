@@ -60,6 +60,10 @@ build {
       "sudo tar -zxf /tmp/dotnet.tar.gz -C /usr/share/dotnet",
       "sudo ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet",
 
+      "sudo wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -",
+      "sudo apt-get install apt-transport-https",
+      "sudo echo 'deb https://artifacts.elastic.co/packages/oss-7.x/apt stable main' | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list",
+      "sudo apt-get update && sudo apt-get install -y filebeat='7.10.2'",
       "sudo systemctl daemon-reload",
       "sudo systemctl enable prometheus-node-exporter",
       "sudo systemctl enable stress-test-loader.service",
