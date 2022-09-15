@@ -23,5 +23,5 @@ jobs:
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-region: us-west-2
-        role-to-assume: arn:aws:iam::275684003332:role/stresstest-loader-gitaction_cicd_role
+        role-to-assume: arn:aws:iam::275684003332:role/strestest-loader-cicd-v2
         role-session-name: stresstestaws
