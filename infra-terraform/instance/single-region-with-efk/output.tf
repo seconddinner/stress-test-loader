@@ -1,13 +1,13 @@
 output "vpc_id" {
   value = module.network.aws_vpc_id
 }
-output "aws_subnets" {
-  value = module.network.aws_subnets
-}
+#output "aws_subnets" {
+#  value = module.network.aws_subnets
+#}
 output "subnet_ids" {
   value = data.aws_subnets.self.ids
 }
-output "es_point" {
+output "es_endpoint" {
   value = module.es-domain.es_point
 }
 output "es_kibana_endpoint" {

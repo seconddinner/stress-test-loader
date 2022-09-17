@@ -56,11 +56,11 @@ if \$programname == 'stress-test-loader-linux' then @127.0.0.1:10514
 EOF
 
 # setup filebeat
-wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
-sudo apt-get install apt-transport-https
-echo "deb https://artifacts.elastic.co/packages/oss-7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
-sudo apt-get update && \
-sudo apt-get install -y filebeat='7.10.2'
+#wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+#sudo apt-get install apt-transport-https
+#echo "deb https://artifacts.elastic.co/packages/oss-7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
+#sudo apt-get update && \
+#sudo apt-get install -y filebeat='7.10.2'
 
 cat <<EOF > /etc/filebeat/filebeat.yml
 scan_frequency: 10s

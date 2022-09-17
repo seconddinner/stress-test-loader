@@ -55,6 +55,8 @@ terraform.rc
 .terraform.lock.hcl
 .terraform
 terraform.plan
+providers.tf
+provider.tf
 
 stress-test-loader/client/client
 stress-test-loader/client/testconfig/*
