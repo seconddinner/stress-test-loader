@@ -77,8 +77,8 @@ setup.ilm:
   ilm.enabled: false
 setup.template:
   enabled: true
-  name: snap-nvstresstest-
-  pattern: snap-nvstresstest-*
+  name: stresstest-${environment}
+  pattern: stresstest-${environment}-*
   settings:
     index.number_of_shards: 16
 filebeat.inputs:
@@ -91,7 +91,7 @@ filebeat.inputs:
   paths:
     - /var/log/stresstest-client/stresstest-client*.log
   fields:
-    index: snap-nvstresstest
+    index: stresstest-${environment}
   processors:
   - decode_json_fields:
       fields: ["message"]
@@ -105,13 +105,13 @@ filebeat.inputs:
         - '1661403661761'
 output.elasticsearch:
   indices:
-  - index: snap-nvstresstest-%%{+yyyy.MM.dd}
+  - index: stresstest-${environment}-%%{+yyyy.MM.dd}
     when.contains:
       fields:
-        index: snap-nvstresstest
+        index: stresstest-${environment}
   hosts:
   - https://${es_endpoint}:443
-  username: stresstestadmin
+  username: ${masterusername}
   password: "${masterpassword}"
   worker: 2
   bulk_max_size: 4096

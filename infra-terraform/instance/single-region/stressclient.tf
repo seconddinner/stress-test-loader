@@ -21,8 +21,9 @@ locals {
     stress_test_loader_allowed_cidr = var.stress_test_loader_allowed_cidr
     stress_test_loader_port         = var.stress_test_loader_port
     environment                     = var.environment
+    masterusername                  = var.masterusername
     masterpassword                  = var.masterpassword
-    es_endpoint                     = module.es-domain.es_endpoint
+    es_endpoint                     = var.create_esdomain ? module.es-domain[0].es_endpoint : data.aws_elasticsearch_domain.es[0].endpoint
   })
 }
 

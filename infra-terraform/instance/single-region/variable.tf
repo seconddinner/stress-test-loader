@@ -73,13 +73,18 @@ variable "esdomain" {
   default = "stresstest"
 }
 
+variable "masterusername" {
+  type = string
+  default = "stresstestadmin"
+}
+
 variable "masterpassword" {
   type = string
 }
 
 variable "create_es_iam_service_linked_role" {
   type = bool
-  default = true
+  default = false
 }
 
 variable "create_esdomain" {
