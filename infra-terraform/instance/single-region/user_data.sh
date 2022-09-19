@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 cat <<EOF > /usr/local/stress_test_loader-node-selfcheck/config.json
 {
     "VRList": [],
@@ -52,6 +51,71 @@ EOF
 
 source /root/register.sh
 
+cat <<EOF > /etc/rsyslog.d/99-stresstest.conf
+if \$programname == 'stress-test-loader-linux' then @127.0.0.1:10514
+EOF
+
+# setup filebeat
+#wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+#sudo apt-get install apt-transport-https
+#echo "deb https://artifacts.elastic.co/packages/oss-7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
+#sudo apt-get update && \
+#sudo apt-get install -y filebeat='7.10.2'
+
+cat <<EOF > /etc/filebeat/filebeat.yml
+scan_frequency: 10s
+filebeat.shutdown_timeout: 2s
+filebeat.registry.flush: 0s
+logging.metrics.enabled: true
+logging.level: info
+queue.mem:
+  events: 65535
+  flush.min_events: 2048
+  flush.timeout: 3s
+setup.ilm:
+  enabled: false
+  ilm.enabled: false
+setup.template:
+  enabled: true
+  name: snap-nvstresstest-
+  pattern: snap-nvstresstest-*
+  settings:
+    index.number_of_shards: 16
+filebeat.inputs:
+- type: log
+  enabled: true
+  tail_files: true
+  close_inactive: 5m
+  ignore_older: 10m
+  close_timeout: 1h
+  paths:
+    - /var/log/stresstest-client/stresstest-client*.log
+  fields:
+    index: snap-nvstresstest
+  processors:
+  - decode_json_fields:
+      fields: ["message"]
+      target: "stressclient"
+  - timestamp:
+      field: stressclient.EndTime
+      target_field: stressclient.EndTimestamp
+      layouts:
+        - UNIX_MS
+      test:
+        - '1661403661761'
+output.elasticsearch:
+  indices:
+  - index: snap-nvstresstest-%%{+yyyy.MM.dd}
+    when.contains:
+      fields:
+        index: snap-nvstresstest
+  hosts:
+  - https://${es_point}:443
+  username: stresstestadmin
+  password: "${masterpassword}"
+  worker: 2
+  bulk_max_size: 4096
+EOF
 
 
 systemctl daemon-reload
@@ -59,3 +123,5 @@ systemctl restart stress_test_loader
 systemctl restart prometheus-node-exporter
 systemctl restart prometheus-stress_test_loader-exporter
 systemctl restart stress_test_loader-node-selfcheck.service
+systemctl restart filebeat
+systemctl restart rsyslog
