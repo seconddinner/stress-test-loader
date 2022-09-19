@@ -1,4 +1,4 @@
-output "es_point" {
+output "es_endpoint" {
   value = aws_elasticsearch_domain.es.endpoint
 }
 output "kibana_endpoint" {

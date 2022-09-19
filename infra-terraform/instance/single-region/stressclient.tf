@@ -22,7 +22,7 @@ locals {
     stress_test_loader_port         = var.stress_test_loader_port
     environment                     = var.environment
     masterpassword                  = var.masterpassword
-    es_point                        = module.es-domain.es_point
+    es_endpoint                     = module.es-domain.es_endpoint
   })
 }
 

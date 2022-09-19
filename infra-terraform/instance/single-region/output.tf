@@ -8,7 +8,7 @@ output "subnet_ids" {
   value = data.aws_subnets.self.ids
 }
 output "es_endpoint" {
-  value = module.es-domain.es_point
+  value = module.es-domain.es_endpoint
 }
 output "es_kibana_endpoint" {
   value = module.es-domain.kibana_endpoint

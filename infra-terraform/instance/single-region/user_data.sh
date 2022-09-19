@@ -110,7 +110,7 @@ output.elasticsearch:
       fields:
         index: snap-nvstresstest
   hosts:
-  - https://${es_point}:443
+  - https://${es_endpoint}:443
   username: stresstestadmin
   password: "${masterpassword}"
   worker: 2

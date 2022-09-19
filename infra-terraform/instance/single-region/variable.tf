@@ -81,3 +81,8 @@ variable "create_es_iam_service_linked_role" {
   type = bool
   default = true
 }
+
+variable "create_esdomain" {
+  type = bool
+  default = false
+}
