@@ -43,6 +43,16 @@ variable "ami_name" {
   default = ""
 }
 
+variable "clientarch" {
+  description = "the architecture of the stress-client, valid values are arm or x86_64"
+  type = string
+  default = "arm64"
+  validation {
+    condition     = contains(["arm64", "x86_64"], var.clientarch)
+    error_message = "Valid values for var 'client' are ('arm64', 'x86_64')."
+  }
+}
+
 variable "environment" {
   default = "qa"
 }

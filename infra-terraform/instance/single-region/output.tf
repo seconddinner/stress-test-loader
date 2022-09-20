@@ -22,3 +22,6 @@ output "stressclient_asg_name" {
 output "stressclient_asg_desired_capacity" {
   value = module.autoscale.stressclient_asg_desired_capacity
 }
+output "stressclient_ami" {
+  value = data.aws_ami.stl.image_id
+}

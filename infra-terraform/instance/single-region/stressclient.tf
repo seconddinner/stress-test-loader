@@ -13,6 +13,10 @@ data "aws_ami" "stl" {
     name   = "name"
     values = ["stress-test-loader-${var.ami_name}*"]
   }
+  filter {
+    name   = "architecture"
+    values = ["${var.clientarch}"]
+  }
   owners = ["${var.owner_id}"]
 }
 
