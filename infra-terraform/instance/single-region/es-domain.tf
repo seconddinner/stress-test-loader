@@ -6,6 +6,8 @@ module "es-domain" {
   vpc_id = module.network.aws_vpc_id
   masterusername = var.masterusername
   masterpassword = var.masterpassword
+  datanode_type = var.datanode_type
+  datanode_count = var.datanode_count
   create_iam_service_linked_role = var.create_es_iam_service_linked_role
 }
 

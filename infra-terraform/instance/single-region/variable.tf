@@ -101,3 +101,13 @@ variable "create_esdomain" {
   type = bool
   default = false
 }
+
+variable "datanode_type" {
+  type = string
+  default = "m6g.large.elasticsearch"
+}
+
+variable "datanode_count" {
+  type  = number
+  default = 4
+}
