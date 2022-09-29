@@ -54,9 +54,14 @@ override.tf.json
 terraform.rc
 .terraform.lock.hcl
 .terraform
+terraform.plan
+providers.tf
+provider.tf
 
 stress-test-loader/client/client
 stress-test-loader/client/testconfig/*
+stress-test-loader/client/ip.json
+stress-test-loader/client/stresstest.json
 infra-terraform/instance/.testscript/*
 .DS_Store
 stress-test-loader/__debug_bin
