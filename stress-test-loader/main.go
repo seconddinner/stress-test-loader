@@ -9,9 +9,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
+	"time"
 
 	pb "stress-test-loader/proto"
 
@@ -28,6 +30,8 @@ import (
 var Version = "notset"
 
 var StressTestLoaderConfig pb.StressTestConfig
+
+var ServerIPAddress string
 
 type server struct {
 	pb.StressTestLoaderServer
@@ -53,6 +57,7 @@ func ensureDir(dirName string) error {
 }
 
 func copyStressTest(in *pb.TestRequest) (err error) {
+	log.Debug(in.TimeStamp)
 	file, err := os.Create(StressTestLoaderConfig.WorkingFolder + "/" + in.S3Key)
 	if err != nil {
 		log.Error("Unable to open file %q, %v", in.S3Key, err)
@@ -115,6 +120,11 @@ func (t *ChanStruct) stopStressTest(in *pb.TestRequest) (err error, msg string) 
 	return
 }
 
+func (t *ChanStruct) addAWSS3setting(in *pb.TestRequest) (err error) {
+	t.cmd.Env = append(t.cmd.Env, "ErrorLogS3FileName="+ServerIPAddress)
+	t.cmd.Env = append(t.cmd.Env, "ErrorLogS3Path="+in.S3Key+"/"+in.TimeStamp)
+	return
+}
 func (t *ChanStruct) startStressTest(in *pb.TestRequest) (err error) {
 	t.running = true
 	log.Print(in)
@@ -128,7 +138,8 @@ func (t *ChanStruct) startStressTest(in *pb.TestRequest) (err error) {
 	for _, s := range in.EnvVariableList {
 		t.cmd.Env = append(t.cmd.Env, s.EnvName+"="+s.EnvValue)
 	}
-	log.Debug(t.cmd.Env)
+	t.addAWSS3setting(in)
+	log.Info(t.cmd.Env)
 
 	stdout, err := t.cmd.StdoutPipe()
 
@@ -220,10 +231,31 @@ func init() {
 
 }
 
+func EC2Metadata() (IPAddress string) {
+	client := http.Client{
+		Timeout: 2 * time.Second,
+	}
+
+	resp, err := client.Get("http://169.254.169.254/latest/meta-data/public-ipv4")
+	if err != nil {
+		log.Error(err)
+		return
+	} else {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Error(err)
+			return
+		} else {
+			IPAddress = string(body)
+			return
+		}
+	}
+	return
+}
+
 func main() {
 
-	// T.chMessages <- "some string"
-
+	ServerIPAddress = EC2Metadata()
 	lis, err := net.Listen("tcp", ":"+strconv.FormatInt(int64(StressTestLoaderConfig.ListenPort), 10))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

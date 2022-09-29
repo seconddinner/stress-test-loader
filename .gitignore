@@ -64,3 +64,6 @@ stress-test-loader/client/ip.json
 stress-test-loader/client/stresstest.json
 infra-terraform/instance/.testscript/*
 .DS_Store
+stress-test-loader/__debug_bin
+stress-test-loader/client/__debug_bin
+stress-test-loader/stress-test-loader-linux.gz
