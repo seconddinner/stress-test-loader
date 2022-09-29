@@ -2,9 +2,7 @@
 
 variable "aws_region" {
   description = "AWS region for all resources."
-
   type = string
-  # default = "ap-southeast-1"
   default = "us-west-2"
 }
 
@@ -34,7 +32,7 @@ variable "asg_desired" {
 }
 
 variable "instance_type" {
-  default = "t4g.nano"
+  default = "c6g.large"
 }
 
 variable "key_name" {
@@ -43,6 +41,16 @@ variable "key_name" {
 
 variable "ami_name" {
   default = ""
+}
+
+variable "clientarch" {
+  description = "the architecture of the stress-client, valid values are arm or x86_64"
+  type = string
+  default = "arm64"
+  validation {
+    condition     = contains(["arm64", "x86_64"], var.clientarch)
+    error_message = "Valid values for var 'client' are ('arm64', 'x86_64')."
+  }
 }
 
 variable "environment" {
@@ -68,4 +76,38 @@ variable "owner_id" {
 
 variable "public_key" {
   type = string
+}
+
+variable "esdomain" {
+  type = string
+  default = "stresstest"
+}
+
+variable "masterusername" {
+  type = string
+  default = "stresstestadmin"
+}
+
+variable "masterpassword" {
+  type = string
+}
+
+variable "create_es_iam_service_linked_role" {
+  type = bool
+  default = false
+}
+
+variable "create_esdomain" {
+  type = bool
+  default = false
+}
+
+variable "datanode_type" {
+  type = string
+  default = "m6g.large.elasticsearch"
+}
+
+variable "datanode_count" {
+  type  = number
+  default = 4
 }

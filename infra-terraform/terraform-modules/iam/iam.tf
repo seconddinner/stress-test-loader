@@ -1,3 +1,7 @@
+data "aws_caller_identity" "current" {}
+
+data "aws_region" "current" {}
+
 resource "aws_iam_role" "stress_test_client_read_role" {
   name = "stress_test_client_read_role-${var.environment}"
 
@@ -23,7 +27,7 @@ EOF
 }
 
 resource "aws_iam_instance_profile" "stress_test_client_read_profile" {
-  name = "stress_test_client_read_profile"
+  name = "stress_test_client_read_profile-${var.environment}"
   role = aws_iam_role.stress_test_client_read_role.name
 }
 
