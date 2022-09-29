@@ -80,7 +80,7 @@ setup.template:
   name: stresstest-${environment}
   pattern: stresstest-${environment}-*
   settings:
-    index.number_of_shards: 16
+    index.number_of_shards: 32
 filebeat.inputs:
 - type: log
   enabled: true
@@ -113,8 +113,8 @@ output.elasticsearch:
   - https://${es_endpoint}:443
   username: ${masterusername}
   password: "${masterpassword}"
-  worker: 2
-  bulk_max_size: 4096
+  worker: 4
+  bulk_max_size: 8192
 EOF
 
 
