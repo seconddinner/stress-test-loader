@@ -102,3 +102,18 @@ variable "datanode_count" {
   type    = number
   default = 4
 }
+
+variable "telegraf_url" {
+  type = string
+  default = ""
+}
+
+variable "telegraf_username" {
+  type = string
+  default = "admin"
+}
+
+variable "telegraf_password" {
+  type = string
+  default = ""
+}

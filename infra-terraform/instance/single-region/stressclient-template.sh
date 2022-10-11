@@ -54,10 +54,44 @@ cat <<EOF > /etc/rsyslog.d/99-stresstest.conf
 if \$programname == 'stress-test-loader-linux' then @127.0.0.1:10514
 EOF
 
+wget -qO- https://repos.influxdata.com/influxdb.key | sudo tee /etc/apt/trusted.gpg.d/influxdb.asc >/dev/null
+source /etc/os-release
+echo "deb https://repos.influxdata.com/$ID $VERSION_CODENAME stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
+sudo apt-get update && sudo apt-get install telegraf
+
+cat <<EOF > /etc/telegraf/telegraf.conf
+[[inputs.cpu]]
+  percpu = true
+  totalcpu = true
+  collect_cpu_time = false
+  report_active = false
+  core_tags = false
+
+[[inputs.disk]]
+  ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]
+
+[[inputs.diskio]]
+[[inputs.kernel]]
+[[inputs.mem]]
+[[inputs.processes]]
+[[inputs.swap]]
+[[inputs.system]]
+[[inputs.net]]
+[[inputs.netstat]]
+
+# Configuration for sending metrics to InfluxDB
+[[outputs.influxdb]]
+  urls = ["${telegraf_url}"]
+  database = "telegraf"
+  username = "${telegraf_username}"
+  password = "${telegraf_password}"
+EOF
+
 systemctl daemon-reload
 systemctl restart stress_test_loader
 systemctl restart prometheus-node-exporter
 systemctl restart prometheus-stress_test_loader-exporter
 systemctl restart stress_test_loader-node-selfcheck.service
 systemctl restart filebeat
+systemctl restart telegraf
 systemctl restart rsyslog
