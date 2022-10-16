@@ -20,8 +20,8 @@ jobs:
     #   run: cd stress-test-loader; bash ./build.sh
 
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@master
+      uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-region: us-west-2
         role-to-assume: arn:aws:iam::667121186086:role/github-action-Role-DZFAU24ZNZXA
-        role-session-name: stresstestaws
+        role-session-name: MySessionName
