@@ -31,4 +31,4 @@ jobs:
         role-session-name: MySessionName
 
     - name: terraform test
-      run: terraform version
+      run: terraform version; find /
