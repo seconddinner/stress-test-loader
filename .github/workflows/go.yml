@@ -31,4 +31,4 @@ jobs:
         role-session-name: MySessionName
 
     - name: terraform test
-      run: terraform version; find /
+      run: terraform version; cd $GITHUB_WORKSPACE; find .
