@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main", build-container ]
 
+permissions:
+  id-token: write
+  contents: read
+  
 jobs:
 
   build:
