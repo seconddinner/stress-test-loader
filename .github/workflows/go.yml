@@ -43,4 +43,4 @@ jobs:
       run: | 
         cd $GITHUB_WORKSPACE/infra-terraform/instance/single-region
         terraform init
-        terraform apply  -auto-approve  -input=false ${{ secrets.EC2_PUBLIC_KEY }}
+        terraform apply  -auto-approve  -input=false ${{ secrets.TERRAFORM_VAR }}
