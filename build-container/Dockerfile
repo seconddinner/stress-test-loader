@@ -14,8 +14,8 @@ RUN sed -i '/.*linux_amd64.zip/!d' packer_${PACKER_VERSION}_SHA256SUMS
 RUN unzip packer_${PACKER_VERSION}_linux_amd64.zip -d /bin
 RUN rm -f packer_${PACKER_VERSION}_linux_amd64.zip
 
-ENV TERRAFORM_VERSION=1.2.0
-ENV TERRAFORM_SHA256SUM=b87de03adbdfdff3c2552c8c8377552d0eecd787154465100cf4e29de4a7be1f
+ENV TERRAFORM_VERSION=1.3.2
+ENV TERRAFORM_SHA256SUM=ce1a8770aaf27736a3352c5c31e95fb10d0944729b9d81013bf6848f8657da5f
 
 ADD https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip ./
 ADD https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS ./

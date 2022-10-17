@@ -14,7 +14,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    container: seconddinner/build:0.0.1
+    container: seconddinner/build:0.0.2
     # #container: golang:1.17
     steps:
     - uses: actions/checkout@v3   
@@ -43,4 +43,4 @@ jobs:
       run: | 
         cd $GITHUB_WORKSPACE/infra-terraform/instance/single-region
         terraform init
-        # terraform apply  -auto-approve  -input=false ${{ secrets.EC2_PUBLIC_KEY }}
+        terraform apply  -auto-approve  -input=false ${{ secrets.EC2_PUBLIC_KEY }}
