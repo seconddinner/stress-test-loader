@@ -19,8 +19,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3   
 
-    - name: build.sh
-      run: cd stress-test-loader; bash ./build.sh
+    # - name: build.sh
+    #   run: cd stress-test-loader; bash ./build.sh
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
