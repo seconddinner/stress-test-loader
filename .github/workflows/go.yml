@@ -33,4 +33,7 @@ jobs:
       run: terraform version; cd $GITHUB_WORKSPACE; find . 
 
     - name: terraform init
-      run: cd infra-terraform/instance/single-region; terraform init
+      run: | 
+        cd $GITHUB_WORKSPACE/infra-terraform/instance/single-region
+        terraform init
+        terraform -auto-approve
