@@ -32,7 +32,7 @@ jobs:
     - name: packer build
       run: |
         cd $GITHUB_WORKSPACE/stress-test-loader
-        source ./cicd/ami/build-stress-test-loader.sh
+        bash ./cicd/ami/build-stress-test-loader.sh
   
     - name: terraform test
       run: terraform version
