@@ -30,4 +30,7 @@ jobs:
         role-session-name: MySessionName
 
     - name: terraform test
-      run: terraform version; cd $GITHUB_WORKSPACE; find .
+      run: terraform version; cd $GITHUB_WORKSPACE; find . 
+
+    - name: terraform init
+      run: cd infra-terraform/instance/single-region; terraform init
