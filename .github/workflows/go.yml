@@ -18,6 +18,8 @@ jobs:
     # #container: golang:1.17
     steps:
     - uses: actions/checkout@v3   
+      with:
+        fetch-depth: 0
 
     # - name: build.sh
     #   run: cd stress-test-loader; bash ./build.sh
