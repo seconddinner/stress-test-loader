@@ -33,7 +33,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/stress-test-loader
         find .
-        source cicd/ami/build-stress-test-loader.sh
+        source ./cicd/ami/build-stress-test-loader.sh
   
     - name: terraform test
       run: terraform version
