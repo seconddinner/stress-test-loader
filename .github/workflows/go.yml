@@ -1,8 +1,9 @@
 name: build-test
 
-# on:
-#   push:
-#     branches: [ "main", build-container, cicd-aws]
+on:
+  push:
+    paths-ignore: [ '*.md' ]
+    branches: [cicd-aws]
 #   pull_request:
 #     branches: [ "main", build-container ]
 
