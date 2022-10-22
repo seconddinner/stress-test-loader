@@ -32,7 +32,7 @@ variable "asg_desired" {
 }
 
 variable "instance_type" {
-  default = "t4g.nano"
+  default = "c6g.large"
 }
 
 variable "key_name" {
