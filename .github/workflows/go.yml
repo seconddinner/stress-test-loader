@@ -46,7 +46,22 @@ jobs:
     # #     bash ./cicd/ami/build-stress-test-loader.sh
 
   terraform-test:
-
+    runs-on: ubuntu-latest
+    container: seconddinner/build:0.0.2
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          stress-test-loader:
+            - 'stress-test-loader/**'
+          docs:
+            - 'docs/**'
+          infra-terraform:
+            - 'infra-terraform/**'
     - name: AWS Setup
       if: steps.filter.outputs.infra-terraform  == 'true'
       uses: aws-actions/configure-aws-credentials@v1
