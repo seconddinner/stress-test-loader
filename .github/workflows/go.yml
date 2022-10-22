@@ -1,10 +1,10 @@
 name: build-test
 
-on:
-  push:
-    branches: [ "main", build-container, cicd-aws]
-  pull_request:
-    branches: [ "main", build-container ]
+# on:
+#   push:
+#     branches: [ "main", build-container, cicd-aws]
+#   pull_request:
+#     branches: [ "main", build-container ]
 
 permissions:
   id-token: write
