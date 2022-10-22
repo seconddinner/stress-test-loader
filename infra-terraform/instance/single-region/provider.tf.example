@@ -18,7 +18,7 @@ terraform {
 
   backend "s3" {
     bucket = "terraform-stresstest-loader"
-    key    = "jxie_stresstest_terraform"
+    key    = "stresstest_loader_cicd_terraform"
     region = "us-west-2"
   }
 }
