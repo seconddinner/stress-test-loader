@@ -1,11 +1,12 @@
 name: build-test
 
 on:
-  push: 
-    branches:
-      - 'main'
-      - 'releases/**'
-      - 'cicd-aws'
+  # we are only going to run it on PR
+  # push: 
+  #   branches:
+  #     - 'main'
+  #     - 'releases/**'
+  #     - 'cicd-aws'
   pull_request:
     paths-ignore: [ '*.md' ]
     branches:
@@ -76,5 +77,6 @@ jobs:
         cd $GITHUB_WORKSPACE/infra-terraform/instance/single-region
         cp provider.tf.example provider.tf
         terraform init
+        terraform destroy -auto-approve  -var 'public_key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5'  -var 'stress_test_loader_allowed_cidr=["1.1.1.1/32"]'  --var owner_id=${{ secrets.OWNER_ID }} --var 'environment=githubaction' 
         terraform apply -auto-approve  -var 'public_key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5'  -var 'stress_test_loader_allowed_cidr=["1.1.1.1/32"]'  --var owner_id=${{ secrets.OWNER_ID }} --var 'environment=githubaction' 
         terraform destroy -auto-approve  -var 'public_key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5'  -var 'stress_test_loader_allowed_cidr=["1.1.1.1/32"]'  --var owner_id=${{ secrets.OWNER_ID }} --var 'environment=githubaction' 
