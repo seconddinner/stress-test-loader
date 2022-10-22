@@ -32,37 +32,31 @@ jobs:
             - 'stress-test-loader/**'
           docs:
             - 'docs/**'
+          infra-terraform:
+            - 'infra-terraform/**'
     - name: build
       if: steps.filter.outputs.stress-test-loader  == 'true'
       run: cd stress-test-loader; bash ./build.sh
 
-
-
-
-
-    # - name: build.sh
-    #   run: cd stress-test-loader; bash ./build.sh
-
-    # - name: Configure AWS Credentials
-    #   uses: aws-actions/configure-aws-credentials@v1
-    #   with:
-    #     aws-region: us-west-2
-    #     role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-    #     role-session-name: stresstest-loader-githubaction-aws-role
+    - name: AWS Setup
+      if: steps.filter.outputs.infra-terraform  == 'true'
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: us-west-2
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-session-name: stresstest-loader-githubaction-aws-role
 
     # # - name: packer build
     # #   run: |
     # #     cd $GITHUB_WORKSPACE/stress-test-loader
     # #     bash ./cicd/ami/build-stress-test-loader.sh
   
-    # - name: terraform test
-    #   run: terraform version
-
-    # - name: terraform init
-    #   run: | 
-    #     cd $GITHUB_WORKSPACE/infra-terraform/instance/single-region
-    #     terraform init
-    #     terraform apply  -auto-approve  ${{ secrets.TERRAFORM_VAR }}
-    #     terraform destroy  -auto-approve  ${{ secrets.TERRAFORM_VAR }} 
-    #     terraform apply -auto-approve  -var 'public_key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5'  -var 'stress_test_loader_allowed_cidr=["1.1.1.1/32"]'  --var owner_id=${{ secrets.OWNER_ID }} --var 'environment=githubaction' 
-    #     terraform destroy -auto-approve  -var 'public_key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5'  -var 'stress_test_loader_allowed_cidr=["1.1.1.1/32"]'  --var owner_id=${{ secrets.OWNER_ID }} --var 'environment=githubaction' 
+    - name: terraform 
+      if: steps.filter.outputs.infra-terraform  == 'true'
+      run: | 
+        cd $GITHUB_WORKSPACE/infra-terraform/instance/single-region
+        terraform init
+        terraform apply  -auto-approve  ${{ secrets.TERRAFORM_VAR }}
+        terraform destroy  -auto-approve  ${{ secrets.TERRAFORM_VAR }} 
+        terraform apply -auto-approve  -var 'public_key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5'  -var 'stress_test_loader_allowed_cidr=["1.1.1.1/32"]'  --var owner_id=${{ secrets.OWNER_ID }} --var 'environment=githubaction' 
+        terraform destroy -auto-approve  -var 'public_key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5'  -var 'stress_test_loader_allowed_cidr=["1.1.1.1/32"]'  --var owner_id=${{ secrets.OWNER_ID }} --var 'environment=githubaction' 
