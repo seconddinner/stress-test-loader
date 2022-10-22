@@ -1,3 +1,33 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.32.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3"
+    }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2"
+    }
+  }
+
+  required_version = "~> 1.0"
+
+  backend "s3" {
+    bucket = "terraform-stresstest-loader"
+    key    = "jxie_stresstest_terraform"
+    region = "us-west-2"
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
+
 resource "random_id" "id" {
   byte_length = 8
 }
