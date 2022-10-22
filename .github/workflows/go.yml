@@ -1,11 +1,11 @@
 name: build-test
 
 on:
-  push:
+  pull_request:
     paths-ignore: [ '*.md' ]
-    branches: [cicd-aws]
-#   pull_request:
-#     branches: [ "main", build-container ]
+    branches:
+      - main
+      - '**'
 
 permissions:
   id-token: write
