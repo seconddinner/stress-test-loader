@@ -117,8 +117,9 @@ jobs:
         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
         cd $GITHUB_WORKSPACE/games/t1/backend
-        pulumi config set aws:region us-west-2
-        pulumi preview --stack dev --non-interactive
+        find . 
+        #pulumi config set aws:region us-west-2
+        #pulumi preview --stack dev --non-interactive
       
       
 
