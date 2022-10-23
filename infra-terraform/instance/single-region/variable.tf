@@ -23,7 +23,7 @@ variable "asg_min" {
 
 variable "asg_max" {
   description = ""
-  default     = 800
+  default     = 5
 }
 
 variable "asg_desired" {
@@ -32,7 +32,7 @@ variable "asg_desired" {
 }
 
 variable "instance_type" {
-  default = "c6g.large"
+  default = "t4g.nano"
 }
 
 variable "key_name" {
@@ -54,7 +54,7 @@ variable "clientarch" {
 }
 
 variable "environment" {
-  default = "qa"
+  default = "gitaction"
 }
 
 variable "stress_test_loader_port" {

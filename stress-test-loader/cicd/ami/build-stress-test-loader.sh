@@ -2,7 +2,7 @@
 set -x 
 export STL_version=`git describe --tags --long`
 echo "${STL_version}"
-source build.sh
+bash build.sh
 packer init cicd/packer
 packer fmt cicd/packer
 packer build -var="PNS_version=stress-test-loader-${STL_version}" -machine-readable cicd/packer/ubuntu-stress-test-loader.pkr.hcl | tee build.log
