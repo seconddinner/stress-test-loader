@@ -42,6 +42,11 @@ jobs:
       run: cd stress-test-loader; bash ./build.sh
     - name: packer build
       if: steps.filter.outputs.stress-test-loader  == 'true'
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: us-west-2
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-session-name: stresstest-loader-githubaction-aws-role
       run: |
         cd $GITHUB_WORKSPACE/stress-test-loader
         bash ./cicd/ami/build-stress-test-loader.sh
