@@ -20,7 +20,7 @@ permissions:
 jobs:
   stresstest-build-test:
     runs-on: ubuntu-latest
-    container: seconddinner/build:0.0.2
+    container: seconddinner/build:0.0.3
     steps:
     - uses: actions/checkout@v3
       with:
@@ -31,10 +31,12 @@ jobs:
         filters: |
           stress-test-loader:
             - 'stress-test-loader/**'
+            - '.github/**'
           docs:
             - 'docs/**'
           infra-terraform:
             - 'infra-terraform/**'
+            - '.github/**'
     - name: build
       if: steps.filter.outputs.stress-test-loader  == 'true'
       run: cd stress-test-loader; bash ./build.sh
@@ -48,7 +50,7 @@ jobs:
 
   terraform-test:
     runs-on: ubuntu-latest
-    container: seconddinner/build:0.0.2
+    container: seconddinner/build:0.0.3
     steps:
     - uses: actions/checkout@v3
       with:
@@ -57,12 +59,10 @@ jobs:
       id: filter
       with:
         filters: |
-          stress-test-loader:
-            - 'stress-test-loader/**'
-          docs:
-            - 'docs/**'
           infra-terraform:
             - 'infra-terraform/**'
+            - '.github/**'
+    
     - name: AWS Setup
       if: steps.filter.outputs.infra-terraform  == 'true'
       uses: aws-actions/configure-aws-credentials@v1
@@ -70,7 +70,11 @@ jobs:
         aws-region: us-west-2
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         role-session-name: stresstest-loader-githubaction-aws-role
-  
+    
+    - name: pulumi 
+      if: steps.filter.outputs.infra-terraform  == 'true'
+      run: pulumi version
+
     - name: terraform 
       if: steps.filter.outputs.infra-terraform  == 'true'
       run: | 

@@ -28,3 +28,12 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 ENV PATH="/go/bin:${PATH}"
 
+ENV PULUMI_VERSION=v3.43.1
+ENV PULUMI_SHA256SUM=24acebecc361f63f3884e96d0e2761c73c782561f600c58fbb440e88467d61f78337f4ebced571ab8e490138b768dac507de1a0cbd8481f427cf5e5ee42f1683
+
+ADD https://github.com/pulumi/pulumi/releases/download/${PULUMI_VERSION}/pulumi-${PULUMI_VERSION}-linux-x64.tar.gz ./
+RUN tar xzf pulumi-${PULUMI_VERSION}-linux-x64.tar.gz -C /bin
+RUN rm -f pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
+
+ENV PATH="/bin/pulumi:${PATH}"
+
