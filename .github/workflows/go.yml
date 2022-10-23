@@ -2,11 +2,9 @@ name: build-test
 
 on:
   # we are only going to run it on PR
-  # push: 
-  #   branches:
-  #     - 'main'
-  #     - 'releases/**'
-  #     - 'cicd-aws'
+  push: 
+    branches:
+      - 't1-backend-serverless'
   pull_request:
     paths-ignore: [ '*.md' ]
     branches:
@@ -31,14 +29,12 @@ jobs:
         filters: |
           stress-test-loader:
             - 'stress-test-loader/**'
-            - '.github/**'
           packer:
             - 'stress-test-loader/cicd/**'
           docs:
             - 'docs/**'
           infra-terraform:
             - 'infra-terraform/**'
-            - '.github/**'
             
     - name: build
       if: steps.filter.outputs.stress-test-loader  == 'true'
@@ -69,7 +65,6 @@ jobs:
         filters: |
           infra-terraform:
             - 'infra-terraform/**'
-            - '.github/**'
     
     - name: AWS Setup
       if: steps.filter.outputs.infra-terraform  == 'true'
