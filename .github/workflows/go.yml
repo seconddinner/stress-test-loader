@@ -59,12 +59,9 @@ jobs:
       id: filter
       with:
         filters: |
-          stress-test-loader:
-            - 'stress-test-loader/**'
-          docs:
-            - 'docs/**'
           infra-terraform:
             - 'infra-terraform/**'
+            - '.github/**'
     
     - name: AWS Setup
       if: steps.filter.outputs.infra-terraform  == 'true'
