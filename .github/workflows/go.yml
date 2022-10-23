@@ -76,18 +76,22 @@ jobs:
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         role-session-name: stresstest-loader-githubaction-aws-role
     
-    # - name: pulumi 
-    #   if: steps.filter.outputs.games  == 'true'
-    #   run: pulumi version
-
-    - uses: pulumi/actions@v3
+    - name: pulumi 
       if: steps.filter.outputs.games  == 'true'
-      with:
-        command: preview
-        stack-name: dev
-        work-dir: games/t1/backend
+      run: |
+        cd $GITHUB_WORKSPACE/games/t1/backend
+        pulumi preview --stack dev --non-interactive
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}    
+
+    # - uses: pulumi/actions@v3
+    #   if: steps.filter.outputs.games  == 'true'
+    #   with:
+    #     command: preview
+    #     stack-name: dev
+    #     work-dir: games/t1/backend
+    #   env:
+    #     PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}    
 
     - name: terraform 
       if: steps.filter.outputs.infra-terraform  == 'true'
