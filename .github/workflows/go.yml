@@ -1,142 +1,141 @@
-name: Pulumi
-on:
-  push: 
-    branches:
-      - 't1-backend-serverless'
-jobs:
-  preview:
-    name: Preview
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-      - uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.x
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-region: us-west-2
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      - uses: pulumi/actions@v3
-        with:
-          command: preview
-          stack-name: dev
-          work-dir: games/t1/backend
-        env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-
-
-
-# name: build-test
-
+# name: Pulumi
 # on:
-#   # we are only going to run it on PR
 #   push: 
 #     branches:
 #       - 't1-backend-serverless'
-#   pull_request:
-#     paths-ignore: [ '*.md' ]
-#     branches:
-#       - main
-#       - '**'
-
-# permissions:
-#   id-token: write
-#   contents: read
-
 # jobs:
-#   stresstest-build-test:
+#   preview:
+#     name: Preview
 #     runs-on: ubuntu-latest
-#     container: seconddinner/build:0.0.3
 #     steps:
-#     - uses: actions/checkout@v3
-#       with:
-#         fetch-depth: 0
-#     - uses: dorny/paths-filter@v2
-#       id: filter
-#       with:
-#         filters: |
-#           stress-test-loader:
-#             - 'stress-test-loader/**'
-#           packer:
-#             - 'stress-test-loader/cicd/**'
-#           docs:
-#             - 'docs/**'
-#           infra-terraform:
-#             - 'infra-terraform/**'
+#       - uses: actions/checkout@v2
+#         with:
+#           fetch-depth: 1
+#       - uses: actions/setup-dotnet@v1
+#         with:
+#           dotnet-version: 3.1.x
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-region: us-west-2
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#       - uses: pulumi/actions@v3
+#         with:
+#           command: preview
+#           stack-name: dev
+#           work-dir: games/t1/backend
+#         env:
+#           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+
+
+name: build-test
+
+on:
+  # we are only going to run it on PR
+  push: 
+    branches:
+      - 't1-backend-serverless'
+  pull_request:
+    paths-ignore: [ '*.md' ]
+    branches:
+      - main
+      - '**'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  stresstest-build-test:
+    runs-on: ubuntu-latest
+    container: seconddinner/build:0.0.3
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          stress-test-loader:
+            - 'stress-test-loader/**'
+          packer:
+            - 'stress-test-loader/cicd/**'
+          docs:
+            - 'docs/**'
+          infra-terraform:
+            - 'infra-terraform/**'
             
-#     - name: build
-#       if: steps.filter.outputs.stress-test-loader  == 'true'
-#       run: cd stress-test-loader; bash ./build.sh
-#     - name: AWS Setup
-#       if: steps.filter.outputs.infra-terraform  == 'true'
-#       uses: aws-actions/configure-aws-credentials@v1
-#       with:
-#         aws-region: us-west-2
-#         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-#         role-session-name: stresstest-loader-githubaction-aws-role
-#     - name: packer build
-#       if: steps.filter.outputs.packer  == 'true'
-#       run: |
-#         cd $GITHUB_WORKSPACE/stress-test-loader
-#         bash ./cicd/ami/build-stress-test-loader.sh
+    - name: build
+      if: steps.filter.outputs.stress-test-loader  == 'true'
+      run: cd stress-test-loader; bash ./build.sh
+    - name: AWS Setup
+      if: steps.filter.outputs.infra-terraform  == 'true'
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: us-west-2
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-session-name: stresstest-loader-githubaction-aws-role
+    - name: packer build
+      if: steps.filter.outputs.packer  == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/stress-test-loader
+        bash ./cicd/ami/build-stress-test-loader.sh
 
-#   backend-test:
-#     runs-on: ubuntu-latest
-#     container: seconddinner/build:0.0.3
-#     steps:
-#     - uses: actions/checkout@v3
-#       with:
-#         fetch-depth: 0
-#     - uses: dorny/paths-filter@v2
-#       id: filter
-#       with:
-#         filters: |
-#           infra-terraform:
-#             - 'infra-terraform/**'
-#           games:
-#             - 'games/**'
+  backend-test:
+    runs-on: ubuntu-latest
+    container: seconddinner/build:0.0.3
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          infra-terraform:
+            - 'infra-terraform/**'
+          games:
+            - 'games/**'
     
-#     # - name: AWS Setup
-#     #   if: steps.filter.outputs.infra-terraform  == 'true'
-#     #   uses: aws-actions/configure-aws-credentials@v1
-#     #   with:
-#     #     aws-region: us-west-2
-#     #     role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-#     #     role-session-name: stresstest-loader-githubaction-aws-role
+    # - name: AWS Setup
+    #   if: steps.filter.outputs.infra-terraform  == 'true'
+    #   uses: aws-actions/configure-aws-credentials@v1
+    #   with:
+    #     aws-region: us-west-2
+    #     role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+    #     role-session-name: stresstest-loader-githubaction-aws-role
     
-#     # - name: pulumi 
-#     #   if: steps.filter.outputs.games  == 'true'
-#     #   run: |
-#     #     cd $GITHUB_WORKSPACE/games/t1/backend
-#     #     # pulumi config set --path aws:assumeRole.roleArn ${{ secrets.AWS_ROLE_TO_ASSUME }}
-#     #     pulumi config set aws:region us-west-2
-#     #     pulumi stack select dev
-#     #     # pulumi preview --stack dev --non-interactive
-#     #   env:
-#     #     PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}  
-#     #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#     #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    - name: pulumi 
+      if: steps.filter.outputs.games  == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/games/t1/backend
+        pulumi config set aws:region us-west-2
+        pulumi preview --stack dev --non-interactive
+      env:
+        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}  
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_DEFAULT_REGION: us-west-2
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 
-#     - uses: pulumi/actions@v3
-#       if: steps.filter.outputs.games  == 'true'
-#       with:
-#         command: preview
-#         stack-name: dev
-#         work-dir: games/t1/backend
-#       env:
-#         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}    
+    # - uses: pulumi/actions@v3
+    #   if: steps.filter.outputs.games  == 'true'
+    #   with:
+    #     command: preview
+    #     stack-name: dev
+    #     work-dir: games/t1/backend
+    #   env:
+    #     PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}    
 
-#     - name: terraform 
-#       if: steps.filter.outputs.infra-terraform  == 'true'
-#       run: | 
-#         cd $GITHUB_WORKSPACE/infra-terraform/instance/single-region
-#         cp provider.tf.example provider.tf
-#         terraform init
-#         terraform destroy -auto-approve  -var 'public_key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5'  -var 'stress_test_loader_allowed_cidr=["1.1.1.1/32"]'  --var owner_id=${{ secrets.OWNER_ID }} --var 'environment=stresstest-git-action' 
-#         terraform apply -auto-approve  -var 'public_key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5'  -var 'stress_test_loader_allowed_cidr=["1.1.1.1/32"]'  --var owner_id=${{ secrets.OWNER_ID }} --var 'environment=stresstest-git-action' 
-#         terraform destroy -auto-approve  -var 'public_key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5'  -var 'stress_test_loader_allowed_cidr=["1.1.1.1/32"]'  --var owner_id=${{ secrets.OWNER_ID }} --var 'environment=stresstest-git-action' 
+    - name: terraform 
+      if: steps.filter.outputs.infra-terraform  == 'true'
+      run: | 
+        cd $GITHUB_WORKSPACE/infra-terraform/instance/single-region
+        cp provider.tf.example provider.tf
+        terraform init
+        terraform destroy -auto-approve  -var 'public_key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5'  -var 'stress_test_loader_allowed_cidr=["1.1.1.1/32"]'  --var owner_id=${{ secrets.OWNER_ID }} --var 'environment=stresstest-git-action' 
+        terraform apply -auto-approve  -var 'public_key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5'  -var 'stress_test_loader_allowed_cidr=["1.1.1.1/32"]'  --var owner_id=${{ secrets.OWNER_ID }} --var 'environment=stresstest-git-action' 
+        terraform destroy -auto-approve  -var 'public_key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5'  -var 'stress_test_loader_allowed_cidr=["1.1.1.1/32"]'  --var owner_id=${{ secrets.OWNER_ID }} --var 'environment=stresstest-git-action' 
