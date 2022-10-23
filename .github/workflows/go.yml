@@ -39,6 +39,7 @@ jobs:
           infra-terraform:
             - 'infra-terraform/**'
             - '.github/**'
+            
     - name: build
       if: steps.filter.outputs.stress-test-loader  == 'true'
       run: cd stress-test-loader; bash ./build.sh
