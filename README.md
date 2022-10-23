@@ -37,10 +37,10 @@ Once you have created an AWS AMI for stress-test, you can use Infra-terraform to
 ### terraform stress infrastructure 
 
 1. make a copy of ```infra-terraform/instance/single-region``` in ```infra-terraform/instance/```, we use ```infra-terraform/instance/single-region-test``` as an example.
-1. replace `backend "s3"` in ```infra-terraform/instance/single-region-test/main.tf``` with your own backend.
+1. copy ```infra-terraform/instance/single-region/provider.tf.example``` with your own backend, make sure you use your own AWS credential & backend.
 1. need following variables: [public_key](https://www.techrepublic.com/article/how-to-view-your-ssh-keys-in-linux-macos-and-windows/), your aws account id as [owner_id](https://docs.aws.amazon.com/IAM/latest/UserGuide/console_account-alias.html), your machines public ip as [stress_test_loader_allowed_cidr](https://ifconfig.me/)
-1. update variables `infra-terraform/instance/single-region-test/variable.tf`.
-1. cd ```infra-terraform/instance/single-region-test```
+1. update variables `infra-terraform/instance/single-region/variable.tf`.
+1. cd ```infra-terraform/instance/single-region```
 1. ```terraform init```
 1. ```terraform apply```
 1. If everything worked according to plan, you will see message like ``` Apply complete! Resources: XX added, XX changed, XX destroyed ```
