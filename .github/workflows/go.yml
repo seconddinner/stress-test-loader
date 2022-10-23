@@ -101,7 +101,8 @@ jobs:
             - 'games/**'
     
     - name: AWS Setup
-      if: steps.filter.outputs.infra-terraform  == 'true'
+      if: | 
+        steps.filter.outputs.infra-terraform  == 'true' || steps.filter.outputs.games  == 'true'
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-region: us-west-2
