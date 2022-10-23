@@ -32,6 +32,8 @@ jobs:
           stress-test-loader:
             - 'stress-test-loader/**'
             - '.github/**'
+          packer:
+            - 'stress-test-loader/cicd/**'
           docs:
             - 'docs/**'
           infra-terraform:
@@ -48,7 +50,7 @@ jobs:
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         role-session-name: stresstest-loader-githubaction-aws-role
     - name: packer build
-      if: steps.filter.outputs.stress-test-loader  == 'true'
+      if: steps.filter.outputs.packer  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/stress-test-loader
         bash ./cicd/ami/build-stress-test-loader.sh
