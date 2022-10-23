@@ -114,7 +114,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/games/t1/backend
         pulumi preview --stack dev --non-interactive
-        pulumi up --stack dev --non-interactive
+        pulumi up --stack dev --non-interactive  --skip-preview
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}  
  
@@ -133,6 +133,6 @@ jobs:
       if: steps.filter.outputs.games  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/games/t1/backend
-        pulumi destroy --stack dev --non-interactive
+        pulumi destroy --stack dev --non-interactive --skip-preview
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}  
