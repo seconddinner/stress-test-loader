@@ -52,7 +52,7 @@ jobs:
         cd $GITHUB_WORKSPACE/stress-test-loader
         bash ./cicd/ami/build-stress-test-loader.sh
 
-  terraform-test:
+  backend-test:
     runs-on: ubuntu-latest
     container: seconddinner/build:0.0.3
     steps:
@@ -76,9 +76,18 @@ jobs:
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         role-session-name: stresstest-loader-githubaction-aws-role
     
-    - name: pulumi 
+    # - name: pulumi 
+    #   if: steps.filter.outputs.games  == 'true'
+    #   run: pulumi version
+
+    - uses: pulumi/actions@v3
       if: steps.filter.outputs.games  == 'true'
-      run: pulumi version
+      with:
+        command: preview
+        stack-name: dev
+        work-dir: games/t1/backend
+      env:
+        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}    
 
     - name: terraform 
       if: steps.filter.outputs.infra-terraform  == 'true'
