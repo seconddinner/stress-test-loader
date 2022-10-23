@@ -1,7 +1,8 @@
 name: Pulumi
 on:
-  branches:
-    - 't1-backend-serverless'
+  push: 
+    branches:
+      - 't1-backend-serverless'
 jobs:
   preview:
     name: Preview
