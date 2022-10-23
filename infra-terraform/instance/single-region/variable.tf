@@ -54,7 +54,7 @@ variable "clientarch" {
 }
 
 variable "environment" {
-  default = "qa"
+  default = "gitaction"
 }
 
 variable "stress_test_loader_port" {
