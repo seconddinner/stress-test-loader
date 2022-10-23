@@ -100,13 +100,13 @@ jobs:
           games:
             - 'games/**'
     
-    # - name: AWS Setup
-    #   if: steps.filter.outputs.infra-terraform  == 'true'
-    #   uses: aws-actions/configure-aws-credentials@v1
-    #   with:
-    #     aws-region: us-west-2
-    #     role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-    #     role-session-name: stresstest-loader-githubaction-aws-role
+    - name: AWS Setup
+      if: steps.filter.outputs.infra-terraform  == 'true'
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: us-west-2
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-session-name: stresstest-loader-githubaction-aws-role
     
     - name: pulumi 
       if: steps.filter.outputs.games  == 'true'
@@ -115,9 +115,9 @@ jobs:
         pulumi preview --stack dev --non-interactive
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}  
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_DEFAULT_REGION: us-west-2
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        # AWS_DEFAULT_REGION: us-west-2
+        # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 
     # - uses: pulumi/actions@v3
