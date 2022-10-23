@@ -119,7 +119,7 @@ jobs:
         cd $GITHUB_WORKSPACE/games/t1/backend
         find . 
         #pulumi config set aws:region us-west-2
-        #pulumi preview --stack dev --non-interactive
+        pulumi preview --stack dev --non-interactive
       
       
 
