@@ -40,13 +40,11 @@ jobs:
     - name: build
       if: steps.filter.outputs.stress-test-loader  == 'true'
       run: cd stress-test-loader; bash ./build.sh
-
-### packer is coming next
-##  packer-test: 
-    # # - name: packer build
-    # #   run: |
-    # #     cd $GITHUB_WORKSPACE/stress-test-loader
-    # #     bash ./cicd/ami/build-stress-test-loader.sh
+    - name: packer build
+      if: steps.filter.outputs.stress-test-loader  == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/stress-test-loader
+        bash ./cicd/ami/build-stress-test-loader.sh
 
   terraform-test:
     runs-on: ubuntu-latest
