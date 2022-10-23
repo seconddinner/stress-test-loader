@@ -80,7 +80,7 @@ jobs:
       if: steps.filter.outputs.games  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/games/t1/backend
-        pulumi config set --path aws:assumeRole.roleArn ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        # pulumi config set --path aws:assumeRole.roleArn ${{ secrets.AWS_ROLE_TO_ASSUME }}
         # pulumi config set aws:region us-west-2
         # pulumi stack select dev
         # pulumi preview --stack dev --non-interactive
