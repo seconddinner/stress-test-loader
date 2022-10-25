@@ -114,7 +114,8 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/games/t1/backend
         pulumi preview --stack dev --non-interactive
-        pulumi up --stack dev --non-interactive  --skip-preview
+        pulumi up --stack dev --non-interactive  --skip-preview -j > pulumi.output.json
+        cat pulumi.output.json
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}  
  
