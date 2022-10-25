@@ -134,7 +134,8 @@ jobs:
       if: steps.filter.outputs.games  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/games/t1/backend
-        pulumi state unprotect --all --non-interactive
+        pulumi stack  select dev
+        pulumi state  unprotect --all --non-interactive
         pulumi destroy --stack dev --non-interactive --skip-preview
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}  
