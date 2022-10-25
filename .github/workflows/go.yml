@@ -2,9 +2,9 @@ name: build-test
 
 on:
   # we are only going to run it on PR
-  push: 
-    branches:
-      - 't1-backend-serverless'
+  # push: 
+  #   branches:
+  #     - 't1-backend-serverless'
   pull_request:
     paths-ignore: [ '*.md' ]
     branches:
