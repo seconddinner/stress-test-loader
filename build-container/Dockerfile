@@ -1,4 +1,4 @@
-FROM golang:1.17
+FROM golang:1.19
 LABEL maintainer="Seconddinner Engineering Team"
 
 ENV PACKER_VERSION=1.7.10
@@ -36,4 +36,8 @@ RUN tar xzf pulumi-${PULUMI_VERSION}-linux-x64.tar.gz -C /bin
 RUN rm -f pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
 ENV PATH="/bin/pulumi:${PATH}"
+
+ADD https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb ./
+RUN dpkg -i packages-microsoft-prod.deb ; rm packages-microsoft-prod.deb
+RUN apt-get update && apt-get install -y dotnet-sdk-6.0
 
