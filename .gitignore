@@ -67,3 +67,5 @@ infra-terraform/instance/.testscript/*
 stress-test-loader/__debug_bin
 stress-test-loader/client/__debug_bin
 stress-test-loader/stress-test-loader-linux.gz
+.idea/
+Folder.DotSettings.user
