@@ -6,6 +6,58 @@ using AwsApiGateway = Pulumi.AwsApiGateway;
 
 return await Deployment.RunAsync(() => 
 {
+
+    var basic_dynamodb_table = new Aws.DynamoDB.Table("basic-dynamodb-table", new()
+    {
+        Attributes = new[]
+        {
+            new Aws.DynamoDB.Inputs.TableAttributeArgs
+            {
+                Name = "UserId",
+                Type = "S",
+            },
+            new Aws.DynamoDB.Inputs.TableAttributeArgs
+            {
+                Name = "GameTitle",
+                Type = "S",
+            },
+            new Aws.DynamoDB.Inputs.TableAttributeArgs
+            {
+                Name = "TopScore",
+                Type = "N",
+            },
+        },
+        BillingMode = "PAY_PER_REQUEST",
+        GlobalSecondaryIndexes = new[]
+        {
+            new Aws.DynamoDB.Inputs.TableGlobalSecondaryIndexArgs
+            {
+                HashKey = "GameTitle",
+                Name = "GameTitleIndex",
+                NonKeyAttributes = new[]
+                {
+                    "UserId",
+                },
+                ProjectionType = "INCLUDE",
+                RangeKey = "TopScore",
+                ReadCapacity = 1,
+                WriteCapacity = 1,
+            },
+        },
+        HashKey = "UserId",
+        RangeKey = "GameTitle",
+        Tags = 
+        {
+            { "Environment", "production" },
+            { "Name", "dynamodb-table-1" },
+        },
+        Ttl = new Aws.DynamoDB.Inputs.TableTtlArgs
+        {
+            AttributeName = "TimeToExist",
+            Enabled = false,
+        },
+    });
+
     var role = new Aws.Iam.Role("role", new()
     {
         AssumeRolePolicy = JsonSerializer.Serialize(new Dictionary<string, object?>

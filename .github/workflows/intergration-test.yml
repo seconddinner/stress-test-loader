@@ -2,9 +2,6 @@ name: build-test
 
 on:
   # we are only going to run it on PR
-  # push: 
-  #   branches:
-  #     - 't1-backend-serverless'
   pull_request:
     paths-ignore: [ '*.md' ]
     branches:
@@ -82,11 +79,12 @@ jobs:
       if: steps.filter.outputs.games  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/games/t1/backend
-        pulumi preview --stack dev --non-interactive
-        pulumi up --stack dev --non-interactive  --skip-preview > pulumi.output.json
+        pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
+        pulumi preview --stack stresstest-loader-cicd --non-interactive
+        pulumi up --stack stresstest-loader-cicd --non-interactive  --skip-preview > pulumi.output.json
         # cat pulumi.output.json
       env:
-        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}  
+        PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}  
  
 
     - name: terraform 
@@ -103,8 +101,9 @@ jobs:
       if: steps.filter.outputs.games  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/games/t1/backend
-        pulumi stack  select dev
+        pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
+        pulumi stack  select stresstest-loader-cicd
         pulumi state  unprotect --all --non-interactive 
-        pulumi destroy --stack dev --non-interactive --skip-preview -j > pulumi_destroy.output.json
+        pulumi destroy --stack stresstest-loader-cicd --non-interactive --skip-preview -j > pulumi_destroy.output.json
       env:
-        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}  
+        PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}  
