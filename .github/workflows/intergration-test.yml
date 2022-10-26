@@ -2,9 +2,6 @@ name: build-test
 
 on:
   # we are only going to run it on PR
-  push: 
-    branches:
-      - 'jxie/pulumi-test'
   pull_request:
     paths-ignore: [ '*.md' ]
     branches:
