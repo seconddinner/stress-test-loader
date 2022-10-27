@@ -67,6 +67,12 @@ build {
       "sudo systemctl daemon-reload",
       "sudo systemctl enable prometheus-node-exporter",
       "sudo systemctl enable stress-test-loader.service",
+
+      "sudo wget -qO- https://repos.influxdata.com/influxdb.key | sudo tee /etc/apt/trusted.gpg.d/influxdb.asc >/dev/null",
+      "sudo source /etc/os-release",
+      "sudo echo "deb https://repos.influxdata.com/$ID $VERSION_CODENAME stable" | sudo tee /etc/apt/sources.list.d/influxdb.list",
+      "sudo sudo apt-get update && sudo apt-get install telegraf",
+
       "sudo apt-get clean"
     ]
   }

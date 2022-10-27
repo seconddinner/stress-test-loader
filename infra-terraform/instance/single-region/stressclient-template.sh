@@ -54,11 +54,6 @@ cat <<EOF > /etc/rsyslog.d/99-stresstest.conf
 if \$programname == 'stress-test-loader-linux' then @127.0.0.1:10514
 EOF
 
-wget -qO- https://repos.influxdata.com/influxdb.key | sudo tee /etc/apt/trusted.gpg.d/influxdb.asc >/dev/null
-source /etc/os-release
-echo "deb https://repos.influxdata.com/$ID $VERSION_CODENAME stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
-sudo apt-get update && sudo apt-get install telegraf
-
 cat <<EOF > /etc/telegraf/telegraf.conf
 [[inputs.cpu]]
   percpu = true
