@@ -25,6 +25,9 @@ locals {
     stress_test_loader_allowed_cidr = var.stress_test_loader_allowed_cidr
     stress_test_loader_port         = var.stress_test_loader_port
     environment                     = var.environment
+    telegraf_username               = var.telegraf_username
+    telegraf_password               = var.telegraf_password
+    telegraf_url                    = var.telegraf_url
   })
 }
 
