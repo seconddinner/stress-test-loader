@@ -6,6 +6,7 @@ on:
     paths-ignore: [ '*.md' ]
     branches:
       - main
+      - jxie/pulumi
       - '**'
   workflow_dispatch:
 
