@@ -7,7 +7,7 @@ using AwsApiGateway = Pulumi.AwsApiGateway;
 return await Deployment.RunAsync(() =>
 {
 
-    // add comments on dynamodb
+    // add comments to trigger build
     var basic_dynamodb_table = new Aws.DynamoDB.Table("basic-dynamodb-table", new()
     {
         Attributes = new[]
