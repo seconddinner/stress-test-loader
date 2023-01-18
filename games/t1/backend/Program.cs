@@ -4,9 +4,10 @@ using Pulumi;
 using Aws = Pulumi.Aws;
 using AwsApiGateway = Pulumi.AwsApiGateway;
 
-return await Deployment.RunAsync(() => 
+return await Deployment.RunAsync(() =>
 {
 
+    // add comments on dynamodb
     var basic_dynamodb_table = new Aws.DynamoDB.Table("basic-dynamodb-table", new()
     {
         Attributes = new[]
@@ -46,7 +47,7 @@ return await Deployment.RunAsync(() =>
         },
         HashKey = "UserId",
         RangeKey = "GameTitle",
-        Tags = 
+        Tags =
         {
             { "Environment", "production" },
             { "Name", "dynamodb-table-1" },
