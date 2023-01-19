@@ -9,7 +9,6 @@ on:
       - '**'
   push:
     branches:
-      - jxie/pulumi
   workflow_dispatch:
 
 permissions:
