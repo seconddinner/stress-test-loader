@@ -11,6 +11,9 @@ on:
     branches:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+
 permissions:
   id-token: write
   contents: read
