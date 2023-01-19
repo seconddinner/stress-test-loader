@@ -19,7 +19,7 @@ permissions:
 jobs:
   stresstest-build-test:
     runs-on: ubuntu-latest
-    container: seconddinner/build:0.0.3
+    container: seconddinner/build:0.0.5
     steps:
     - uses: actions/checkout@v3
       with:
