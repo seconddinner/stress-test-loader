@@ -7,7 +7,13 @@ on:
     branches:
       - main
       - '**'
+  push:
+    branches:
+      - main
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
 
 permissions:
   id-token: write
@@ -16,7 +22,7 @@ permissions:
 jobs:
   stresstest-build-test:
     runs-on: ubuntu-latest
-    container: seconddinner/build:0.0.3
+    container: seconddinner/build:0.0.5
     steps:
     - uses: actions/checkout@v3
       with:
@@ -52,7 +58,7 @@ jobs:
 
   backend-test:
     runs-on: ubuntu-latest
-    container: seconddinner/build:0.0.3
+    container: seconddinner/build:0.0.5
     steps:
     - uses: actions/checkout@v3
       with:
@@ -78,6 +84,9 @@ jobs:
     - name: pulumi 
       if: steps.filter.outputs.games  == 'true'
       run: |
+        cd $GITHUB_WORKSPACE/games/t1/WebAPILambda
+        dotnet  publish  -c Release -r linux-arm64 --no-self-contained
+        zip -j -r bin/Release/net6.0/linux-arm64/lambda.zip bin/Release/net6.0/linux-arm64/publish/
         cd $GITHUB_WORKSPACE/games/t1/backend
         pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
         pulumi preview --stack stresstest-loader-cicd --non-interactive
