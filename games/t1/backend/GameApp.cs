@@ -79,7 +79,25 @@ public class GameApp : ComponentResource
             Code = new FileArchive("./function"),
         }, opts);
 
-
+        // can't api rest api gateway? 
+        // Argument type 'Pulumi.CustomResourceOptions' is not assignable to parameter type 'Pulumi.ComponentResourceOptions?'
+        // var api = new AwsApiGateway.RestAPI("api", new()
+        // {
+        //     Routes =
+        //     {
+        //         new AwsApiGateway.Inputs.RouteArgs
+        //         {
+        //             Path = "/",
+        //             LocalPath = "www",
+        //         },
+        //         new AwsApiGateway.Inputs.RouteArgs
+        //         {
+        //             Path = "/date",
+        //             Method = AwsApiGateway.Method.GET,
+        //             EventHandler = fn,
+        //         },
+        //     },
+        // }, opts);
 
         var lambdaFunction = new Aws.Lambda.Function($"{name}-PulumiWebApiGateway_LambdaFunction", new Aws.Lambda.FunctionArgs
         {
