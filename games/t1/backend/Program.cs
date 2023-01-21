@@ -46,7 +46,7 @@ namespace InlineProgram
             var destroy = args.Any() && args[0] == "destroy";
 
             var projectName = "stresstest-loader-cicd";
-            var stackName = "stresstest-loader-cicd";
+            var stackName = "10.1";
             var stackArgs = new InlineProgramArgs(projectName, stackName, program);
             var stack = await LocalWorkspace.CreateOrSelectStackAsync(stackArgs);
             Console.WriteLine("successfully initialized stack");
