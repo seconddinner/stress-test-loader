@@ -4,37 +4,40 @@ using Pulumi;
 using Aws = Pulumi.Aws;
 using AwsApiGateway = Pulumi.AwsApiGateway;
 
-class MyStack : Stack
+namespace InlineProgram
 {
-    public MyStack()
+    class MyStack : Stack
     {
-
-        // add comments to trigger build
-
-        var euProvider = new Aws.Provider("euProvider", new()
+        public MyStack()
         {
-            Region = "eu-west-1",
-        });
 
-        var usProvider = new Aws.Provider("usProvider", new()
-        {
-            Region = "us-east-1",
-        });
+            // add comments to trigger build
 
-        var USGameApp = new GameApp("test", new CustomResourceOptions
-        {
-            Provider = usProvider,
-        });
+            var euProvider = new Aws.Provider("euProvider", new()
+            {
+                Region = "eu-west-1",
+            });
 
-        var eugameApp = new GameApp("eutest", new CustomResourceOptions
-        {
-            Provider = euProvider,
-        });
-        this.TestURL = USGameApp.GatewayURL;
-        this.EuTestURL = eugameApp.GatewayURL;
+            var usProvider = new Aws.Provider("usProvider", new()
+            {
+                Region = "us-east-1",
+            });
+
+            var USGameApp = new GameApp("test", new CustomResourceOptions
+            {
+                Provider = usProvider,
+            });
+
+            var eugameApp = new GameApp("eutest", new CustomResourceOptions
+            {
+                Provider = euProvider,
+            });
+            this.TestURL = USGameApp.GatewayURL;
+            this.EuTestURL = eugameApp.GatewayURL;
+        }
+
+        [Output] public Output<string> TestURL { get; set; }
+
+        [Output] public Output<string> EuTestURL { get; set; }
     }
-
-    [Output] public Output<string> TestURL { get; set; }
-
-    [Output] public Output<string> EuTestURL { get; set; }
 }
