@@ -42,7 +42,6 @@ namespace InlineProgram
 
             });
 
-            Console.WriteLine("hi");
             var destroy = args.Any() && args[0] == "destroy";
 
             var projectName = "stresstest-loader-cicd";
