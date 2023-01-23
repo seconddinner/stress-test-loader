@@ -91,6 +91,8 @@ jobs:
         pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
         pulumi preview --stack stresstest-loader-cicd --non-interactive
         pulumi up --stack stresstest-loader-cicd --non-interactive  --skip-preview > pulumi.output.json
+        cd $GITHUB_WORKSPACE/games/t1/backend-api
+        dotnet run
         # cat pulumi.output.json
       env:
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}  
@@ -114,5 +116,7 @@ jobs:
         pulumi stack  select stresstest-loader-cicd
         pulumi state  unprotect --all --non-interactive 
         pulumi destroy --stack stresstest-loader-cicd --non-interactive --skip-preview -j > pulumi_destroy.output.json
+        cd $GITHUB_WORKSPACE/games/t1/backend-api
+        dotnet run destroy
       env:
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}  

@@ -8,7 +8,7 @@ using AwsApiGateway = Pulumi.AwsApiGateway;
 public class GameApp : ComponentResource
 {
     public Output<string> GatewayURL { get; private set; } = null!;
-    public GameApp(string name,  CustomResourceOptions opts,  ComponentResourceOptions? options = null)
+    public GameApp(string name, CustomResourceOptions opts, ComponentResourceOptions? options = null)
         : base("examples:aws:GameApp", name, options)
     {
         var TestTable = new Aws.DynamoDB.Table($"{name}-testTable", new()
@@ -42,10 +42,9 @@ public class GameApp : ComponentResource
                 AttributeName = "Ttl",
                 Enabled = true,
             },
-            Name = "testTable",
         }, opts);
-        
-        
+
+
         var role = new Aws.Iam.Role($"{name}-role", new()
         {
             AssumeRolePolicy = JsonSerializer.Serialize(new Dictionary<string, object?>
@@ -69,14 +68,14 @@ public class GameApp : ComponentResource
             "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
         },
         }, opts);
-        
-       
+
+
         var fn = new Aws.Lambda.Function($"{name}-fn", new()
         {
             Runtime = "python3.9",
             Handler = "handler.handler",
             Role = role.Arn,
-            Code = new FileArchive("./function"),
+            Code = new FileArchive("../lambda-py-function"),
         }, opts);
 
         // can't api rest api gateway? 
@@ -88,7 +87,7 @@ public class GameApp : ComponentResource
         //         new AwsApiGateway.Inputs.RouteArgs
         //         {
         //             Path = "/",
-        //             LocalPath = "www",
+        //             LocalPath = "../www",
         //         },
         //         new AwsApiGateway.Inputs.RouteArgs
         //         {
@@ -124,7 +123,7 @@ public class GameApp : ComponentResource
         }, opts);
 
 
-       
+
         var httpApiGateway = new Pulumi.Aws.ApiGatewayV2.Api($"{name}-PulumiWebApiGateway_ApiGateway", new Pulumi.Aws.ApiGatewayV2.ApiArgs
         {
             ProtocolType = "HTTP",
