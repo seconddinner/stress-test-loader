@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Pulumi;
 using Aws = Pulumi.Aws;
-using AwsApiGateway = Pulumi.AwsApiGateway;
 
 class MyStack : Stack
 {
@@ -21,12 +20,12 @@ class MyStack : Stack
             Region = "us-east-1",
         });
 
-        var USGameApp = new GameApp("test", new CustomResourceOptions
+        var USGameApp = new GameApp("test", new ServiceDeploymentArgs { }, new CustomResourceOptions
         {
             Provider = usProvider,
         });
 
-        var eugameApp = new GameApp("eutest", new CustomResourceOptions
+        var eugameApp = new GameApp("eutest", new ServiceDeploymentArgs { }, new CustomResourceOptions
         {
             Provider = euProvider,
         });
