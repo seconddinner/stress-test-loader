@@ -100,76 +100,74 @@ public class GameApp : Pulumi.ComponentResource
                 EventHandler = fn,
             },
         },
-        });
+        }, options);
 
-     
-
-        //     var lambdaFunction = new Aws.Lambda.Function($"{name}-PulumiWebApiGateway_LambdaFunction", new Aws.Lambda.FunctionArgs
-        //     {
-        //         Architectures = new[]
-        //         {
-        //             "arm64",
-        //         },
-        //         EphemeralStorage = new Aws.Lambda.Inputs.FunctionEphemeralStorageArgs
-        //         {
-        //             Size = 512,
-        //         },
-        //         Handler = "WebAPILambda::WebAPILambda.LambdaEntryPoint::FunctionHandlerAsync",
-        //         MemorySize = 1024,
-        //         Publish = false,
-        //         ReservedConcurrentExecutions = -1,
-        //         Role = role.Arn,
-        //         Runtime = Aws.Lambda.Runtime.Dotnet6,
-        //         Timeout = 10,
-        //         Code = new FileArchive("../WebAPILambda/bin/Release/net6.0/linux-arm64/lambda.zip"),
-        //         TracingConfig = new Aws.Lambda.Inputs.FunctionTracingConfigArgs
-        //         {
-        //             Mode = "PassThrough",
-        //         },
-        //     }, cropts);
+        var lambdaFunction = new Aws.Lambda.Function($"{name}-PulumiWebApiGateway_LambdaFunction", new Aws.Lambda.FunctionArgs
+        {
+            Architectures = new[]
+            {
+                    "arm64",
+                },
+            EphemeralStorage = new Aws.Lambda.Inputs.FunctionEphemeralStorageArgs
+            {
+                Size = 512,
+            },
+            Handler = "WebAPILambda::WebAPILambda.LambdaEntryPoint::FunctionHandlerAsync",
+            MemorySize = 1024,
+            Publish = false,
+            ReservedConcurrentExecutions = -1,
+            Role = role.Arn,
+            Runtime = Aws.Lambda.Runtime.Dotnet6,
+            Timeout = 10,
+            Code = new FileArchive("../WebAPILambda/bin/Release/net6.0/linux-arm64/lambda.zip"),
+            TracingConfig = new Aws.Lambda.Inputs.FunctionTracingConfigArgs
+            {
+                Mode = "PassThrough",
+            },
+        }, cropts);
 
 
 
-        //     var httpApiGateway = new Pulumi.Aws.ApiGatewayV2.Api($"{name}-PulumiWebApiGateway_ApiGateway", new Pulumi.Aws.ApiGatewayV2.ApiArgs
-        //     {
-        //         ProtocolType = "HTTP",
-        //         RouteSelectionExpression = "${request.method} ${request.path}",
-        //     }, cropts);
+        var httpApiGateway = new Pulumi.Aws.ApiGatewayV2.Api($"{name}-PulumiWebApiGateway_ApiGateway", new Pulumi.Aws.ApiGatewayV2.ApiArgs
+        {
+            ProtocolType = "HTTP",
+            RouteSelectionExpression = "${request.method} ${request.path}",
+        }, cropts);
 
-        //     var httpApiGateway_LambdaIntegration = new Pulumi.Aws.ApiGatewayV2.Integration($"{name}-PulumiWebApiGateway_ApiGatewayIntegration", new Pulumi.Aws.ApiGatewayV2.IntegrationArgs
-        //     {
-        //         ApiId = httpApiGateway.Id,
-        //         IntegrationType = "AWS_PROXY",
-        //         IntegrationMethod = "POST",
-        //         IntegrationUri = lambdaFunction.Arn,
-        //         PayloadFormatVersion = "2.0",
-        //         TimeoutMilliseconds = 30000,
-        //     }, cropts);
+        var httpApiGateway_LambdaIntegration = new Pulumi.Aws.ApiGatewayV2.Integration($"{name}-PulumiWebApiGateway_ApiGatewayIntegration", new Pulumi.Aws.ApiGatewayV2.IntegrationArgs
+        {
+            ApiId = httpApiGateway.Id,
+            IntegrationType = "AWS_PROXY",
+            IntegrationMethod = "POST",
+            IntegrationUri = lambdaFunction.Arn,
+            PayloadFormatVersion = "2.0",
+            TimeoutMilliseconds = 30000,
+        }, cropts);
 
-        //     var httpApiGatewayRoute = new Pulumi.Aws.ApiGatewayV2.Route($"{name}-PulumiWebApiGateway_ApiGatewayRoute", new Pulumi.Aws.ApiGatewayV2.RouteArgs
-        //     {
-        //         ApiId = httpApiGateway.Id,
-        //         RouteKey = "$default",
-        //         Target = httpApiGateway_LambdaIntegration.Id.Apply(id => $"integrations/{id}"),
-        //     }, cropts);
+        var httpApiGatewayRoute = new Pulumi.Aws.ApiGatewayV2.Route($"{name}-PulumiWebApiGateway_ApiGatewayRoute", new Pulumi.Aws.ApiGatewayV2.RouteArgs
+        {
+            ApiId = httpApiGateway.Id,
+            RouteKey = "$default",
+            Target = httpApiGateway_LambdaIntegration.Id.Apply(id => $"integrations/{id}"),
+        }, cropts);
 
-        //     var httpApiGatewayStage = new Pulumi.Aws.ApiGatewayV2.Stage($"{name}-PulumiWebApiGateway_ApiGatewayStage", new Pulumi.Aws.ApiGatewayV2.StageArgs
-        //     {
-        //         ApiId = httpApiGateway.Id,
-        //         AutoDeploy = true,
-        //         Name = "$default",
-        //     }, cropts);
+        var httpApiGatewayStage = new Pulumi.Aws.ApiGatewayV2.Stage($"{name}-PulumiWebApiGateway_ApiGatewayStage", new Pulumi.Aws.ApiGatewayV2.StageArgs
+        {
+            ApiId = httpApiGateway.Id,
+            AutoDeploy = true,
+            Name = "$default",
+        }, cropts);
 
-        //     var lambdaPermissionsForApiGateway = new Aws.Lambda.Permission($"{name}-PulumiWebApiGateway_LambdaPermission", new Aws.Lambda.PermissionArgs
-        //     {
-        //         Action = "lambda:InvokeFunction",
-        //         Function = lambdaFunction.Name,
-        //         Principal = "apigateway.amazonaws.com",
-        //         SourceArn = Output.Format($"{httpApiGateway.ExecutionArn}/*") // note it's the ExecutionArn.
-        //                                                                       // SourceArn = httpApiGateway.ExecutionArn.Apply(arn => $"{arn}/*") // this is another way of doing the same thing
-        //     }, cropts);
+        var lambdaPermissionsForApiGateway = new Aws.Lambda.Permission($"{name}-PulumiWebApiGateway_LambdaPermission", new Aws.Lambda.PermissionArgs
+        {
+            Action = "lambda:InvokeFunction",
+            Function = lambdaFunction.Name,
+            Principal = "apigateway.amazonaws.com",
+            SourceArn = Output.Format($"{httpApiGateway.ExecutionArn}/*") // note it's the ExecutionArn.
+                                                                          // SourceArn = httpApiGateway.ExecutionArn.Apply(arn => $"{arn}/*") // this is another way of doing the same thing
+        }, cropts);
 
-        //     this.GatewayURL = httpApiGateway.ApiEndpoint.Apply(endpoint => $"{endpoint}/api/values");
-        //     this.RegisterOutputs();
+        this.GatewayURL = httpApiGateway.ApiEndpoint.Apply(endpoint => $"{endpoint}/api/values");
+        this.RegisterOutputs();
     }
 }

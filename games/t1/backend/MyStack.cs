@@ -20,7 +20,8 @@ class MyStack : Stack
             Region = "us-east-1",
         });
 
-        var USGameApp = new GameApp("test", new ServiceDeploymentArgs { }, new CustomResourceOptions
+        var USGameApp = new GameApp("test", new ServiceDeploymentArgs { },
+        new CustomResourceOptions
         {
             Provider = usProvider,
         }, new ComponentResourceOptions
@@ -33,10 +34,10 @@ class MyStack : Stack
             Provider = euProvider,
         }, new ComponentResourceOptions
         {
-            Provider = usProvider,
+            Provider = euProvider,
         });
-        // this.TestURL = USGameApp.GatewayURL;
-        // this.EuTestURL = eugameApp.GatewayURL;
+        this.TestURL = USGameApp.GatewayURL;
+        this.EuTestURL = eugameApp.GatewayURL;
     }
 
     [Output] public Output<string> TestURL { get; set; }
