@@ -23,14 +23,20 @@ class MyStack : Stack
         var USGameApp = new GameApp("test", new ServiceDeploymentArgs { }, new CustomResourceOptions
         {
             Provider = usProvider,
+        }, new ComponentResourceOptions
+        {
+            Provider = usProvider,
         });
 
         var eugameApp = new GameApp("eutest", new ServiceDeploymentArgs { }, new CustomResourceOptions
         {
             Provider = euProvider,
+        }, new ComponentResourceOptions
+        {
+            Provider = usProvider,
         });
-        this.TestURL = USGameApp.GatewayURL;
-        this.EuTestURL = eugameApp.GatewayURL;
+        // this.TestURL = USGameApp.GatewayURL;
+        // this.EuTestURL = eugameApp.GatewayURL;
     }
 
     [Output] public Output<string> TestURL { get; set; }
