@@ -24,12 +24,19 @@ namespace InlineProgram
                     Region = "us-east-1",
                 });
 
-                var USGameApp = new GameApp("test", new CustomResourceOptions
+                var USGameApp = new GameApp("test", new ServiceDeploymentArgs { },
+                new CustomResourceOptions
+                {
+                    Provider = usProvider,
+                }, new ComponentResourceOptions
                 {
                     Provider = usProvider,
                 });
 
-                var EUGameApp = new GameApp("eutest", new CustomResourceOptions
+                var EUGameApp = new GameApp("eutest", new ServiceDeploymentArgs { }, new CustomResourceOptions
+                {
+                    Provider = euProvider,
+                }, new ComponentResourceOptions
                 {
                     Provider = euProvider,
                 });

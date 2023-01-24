@@ -1,14 +1,19 @@
 using Pulumi;
 using System.Collections.Generic;
 using System.Text.Json;
-using Pulumi;
 using Aws = Pulumi.Aws;
 using AwsApiGateway = Pulumi.AwsApiGateway;
 
-public class GameApp : ComponentResource
+
+public class ServiceDeploymentArgs
+{
+    public Input<string> SomeInput { get; set; } = null!;
+}
+
+public class GameApp : Pulumi.ComponentResource
 {
     public Output<string> GatewayURL { get; private set; } = null!;
-    public GameApp(string name, CustomResourceOptions opts, ComponentResourceOptions? options = null)
+    public GameApp(string name, ServiceDeploymentArgs opts, CustomResourceOptions? cropts = null, ComponentResourceOptions? options = null)
         : base("examples:aws:GameApp", name, options)
     {
         var TestTable = new Aws.DynamoDB.Table($"{name}-testTable", new()
@@ -42,7 +47,7 @@ public class GameApp : ComponentResource
                 AttributeName = "Ttl",
                 Enabled = true,
             },
-        }, opts);
+        }, cropts);
 
 
         var role = new Aws.Iam.Role($"{name}-role", new()
@@ -52,22 +57,22 @@ public class GameApp : ComponentResource
                 ["Version"] = "2012-10-17",
                 ["Statement"] = new[]
                 {
-                new Dictionary<string, object?>
-                {
-                    ["Action"] = "sts:AssumeRole",
-                    ["Effect"] = "Allow",
-                    ["Principal"] = new Dictionary<string, object?>
+                    new Dictionary<string, object?>
                     {
-                        ["Service"] = "lambda.amazonaws.com",
+                        ["Action"] = "sts:AssumeRole",
+                        ["Effect"] = "Allow",
+                        ["Principal"] = new Dictionary<string, object?>
+                        {
+                            ["Service"] = "lambda.amazonaws.com",
+                        },
                     },
                 },
-            },
             }),
             ManagedPolicyArns = new[]
             {
-            "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-        },
-        }, opts);
+                "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+            },
+        }, cropts);
 
 
         var fn = new Aws.Lambda.Function($"{name}-fn", new()
@@ -76,34 +81,33 @@ public class GameApp : ComponentResource
             Handler = "handler.handler",
             Role = role.Arn,
             Code = new FileArchive("../lambda-py-function"),
-        }, opts);
+        }, cropts);
 
-        // can't api rest api gateway? 
-        // Argument type 'Pulumi.CustomResourceOptions' is not assignable to parameter type 'Pulumi.ComponentResourceOptions?'
-        // var api = new AwsApiGateway.RestAPI("api", new()
-        // {
-        //     Routes =
-        //     {
-        //         new AwsApiGateway.Inputs.RouteArgs
-        //         {
-        //             Path = "/",
-        //             LocalPath = "../www",
-        //         },
-        //         new AwsApiGateway.Inputs.RouteArgs
-        //         {
-        //             Path = "/date",
-        //             Method = AwsApiGateway.Method.GET,
-        //             EventHandler = fn,
-        //         },
-        //     },
-        // }, opts);
+
+        var api = new AwsApiGateway.RestAPI($"{name}-api", new()
+        {
+            Routes =
+        {
+            new AwsApiGateway.Inputs.RouteArgs
+            {
+                Path = "/",
+                LocalPath = "../www",
+            },
+            new AwsApiGateway.Inputs.RouteArgs
+            {
+                Path = "/date",
+                Method = AwsApiGateway.Method.GET,
+                EventHandler = fn,
+            },
+        },
+        }, options);
 
         var lambdaFunction = new Aws.Lambda.Function($"{name}-PulumiWebApiGateway_LambdaFunction", new Aws.Lambda.FunctionArgs
         {
             Architectures = new[]
             {
-                "arm64",
-            },
+                    "arm64",
+                },
             EphemeralStorage = new Aws.Lambda.Inputs.FunctionEphemeralStorageArgs
             {
                 Size = 512,
@@ -120,7 +124,7 @@ public class GameApp : ComponentResource
             {
                 Mode = "PassThrough",
             },
-        }, opts);
+        }, cropts);
 
 
 
@@ -128,7 +132,7 @@ public class GameApp : ComponentResource
         {
             ProtocolType = "HTTP",
             RouteSelectionExpression = "${request.method} ${request.path}",
-        }, opts);
+        }, cropts);
 
         var httpApiGateway_LambdaIntegration = new Pulumi.Aws.ApiGatewayV2.Integration($"{name}-PulumiWebApiGateway_ApiGatewayIntegration", new Pulumi.Aws.ApiGatewayV2.IntegrationArgs
         {
@@ -138,21 +142,21 @@ public class GameApp : ComponentResource
             IntegrationUri = lambdaFunction.Arn,
             PayloadFormatVersion = "2.0",
             TimeoutMilliseconds = 30000,
-        }, opts);
+        }, cropts);
 
         var httpApiGatewayRoute = new Pulumi.Aws.ApiGatewayV2.Route($"{name}-PulumiWebApiGateway_ApiGatewayRoute", new Pulumi.Aws.ApiGatewayV2.RouteArgs
         {
             ApiId = httpApiGateway.Id,
             RouteKey = "$default",
             Target = httpApiGateway_LambdaIntegration.Id.Apply(id => $"integrations/{id}"),
-        }, opts);
+        }, cropts);
 
         var httpApiGatewayStage = new Pulumi.Aws.ApiGatewayV2.Stage($"{name}-PulumiWebApiGateway_ApiGatewayStage", new Pulumi.Aws.ApiGatewayV2.StageArgs
         {
             ApiId = httpApiGateway.Id,
             AutoDeploy = true,
             Name = "$default",
-        }, opts);
+        }, cropts);
 
         var lambdaPermissionsForApiGateway = new Aws.Lambda.Permission($"{name}-PulumiWebApiGateway_LambdaPermission", new Aws.Lambda.PermissionArgs
         {
@@ -161,7 +165,7 @@ public class GameApp : ComponentResource
             Principal = "apigateway.amazonaws.com",
             SourceArn = Output.Format($"{httpApiGateway.ExecutionArn}/*") // note it's the ExecutionArn.
                                                                           // SourceArn = httpApiGateway.ExecutionArn.Apply(arn => $"{arn}/*") // this is another way of doing the same thing
-        }, opts);
+        }, cropts);
 
         this.GatewayURL = httpApiGateway.ApiEndpoint.Apply(endpoint => $"{endpoint}/api/values");
         this.RegisterOutputs();
