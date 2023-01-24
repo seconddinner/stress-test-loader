@@ -1,3 +1,0 @@
-name: t1-backend
-description: A serverless app on AWS API Gateway and Lambda
-runtime: dotnet
