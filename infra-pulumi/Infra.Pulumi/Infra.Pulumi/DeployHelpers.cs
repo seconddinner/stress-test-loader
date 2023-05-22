@@ -83,7 +83,6 @@ public static class DeployHelpers
         {
             { "aws", "v4.24.1" },
         };
-
         var config = new Dictionary<string, ConfigValue>
         {
             { "aws:region", new ConfigValue("us-west-2") },
