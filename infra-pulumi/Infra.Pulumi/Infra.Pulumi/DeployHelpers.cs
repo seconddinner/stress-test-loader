@@ -86,6 +86,7 @@ public static class DeployHelpers
         string sourceAmiId = Environment.GetEnvironmentVariable("source_ami_id");
         string localPublicIp = Environment.GetEnvironmentVariable("stress_test_loader_allowed_cidr");
         string publicKey = Environment.GetEnvironmentVariable("public_key");
+        string environment = Environment.GetEnvironmentVariable("environment") ?? "stresstest-git-action";
         var config = new Dictionary<string, ConfigValue>
         {
             { "aws:region", new ConfigValue("us-west-2") },
@@ -96,7 +97,7 @@ public static class DeployHelpers
             { "stress-test-loader-pulumi:up_scaling_adjustment", new ConfigValue("-1") },
             { "stress-test-loader-pulumi:down_scaling_adjustment", new ConfigValue("-1") },
             { "stress-test-loader-pulumi:egress_allowed_cidr", new ConfigValue("0.0.0.0/0") },
-            { "stress-test-loader-pulumi:environment", new ConfigValue("gitaction") },
+            { "stress-test-loader-pulumi:environment", new ConfigValue(environment) },
             { "stress-test-loader-pulumi:iam_name", new ConfigValue("stress_test_client_read_profile-stress_test_loader") },
             { "stress-test-loader-pulumi:instance_type", new ConfigValue("t4g.nano") },
             { "stress-test-loader-pulumi:max_size", new ConfigValue("3") },
