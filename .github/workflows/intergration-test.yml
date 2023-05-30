@@ -40,8 +40,6 @@ jobs:
             - 'docs/**'
           infra-pulumi:
             - 'infra-pulumi/**'
-    - name: test filters
-      run: echo "${{ steps.filter.outputs.packer }}"
     - name: build
       if: steps.filter.outputs.stress-test-loader  == 'true'
       run: cd stress-test-loader; bash ./build.sh
@@ -53,7 +51,6 @@ jobs:
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         role-session-name: stresstest-loader-githubaction-aws-role
     - name: packer build
-      if: steps.filter.outputs.packer  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/stress-test-loader
         bash ./cicd/ami/build-stress-test-loader.sh
