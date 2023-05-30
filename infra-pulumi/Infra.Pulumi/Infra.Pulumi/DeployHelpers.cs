@@ -86,7 +86,15 @@ public static class DeployHelpers
         string sourceAmiId = Environment.GetEnvironmentVariable("source_ami_id");
         string localPublicIp = Environment.GetEnvironmentVariable("stress_test_loader_allowed_cidr");
         string publicKey = Environment.GetEnvironmentVariable("public_key");
-        string environment = Environment.GetEnvironmentVariable("environment") ?? "stresstest-git-action";
+        string environment;
+        try
+        {
+            environment = Environment.GetEnvironmentVariable("environment");
+        }
+        finally
+        {
+            environment = "stresstest-git-action";
+        }
         var config = new Dictionary<string, ConfigValue>
         {
             { "aws:region", new ConfigValue("us-west-2") },
