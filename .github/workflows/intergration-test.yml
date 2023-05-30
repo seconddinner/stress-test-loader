@@ -51,6 +51,7 @@ jobs:
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         role-session-name: stresstest-loader-githubaction-aws-role
     - name: packer build
+      if: steps.filter.outputs.packer  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/stress-test-loader
         bash ./cicd/ami/build-stress-test-loader.sh
@@ -80,7 +81,7 @@ jobs:
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         role-session-name: stresstest-loader-githubaction-aws-role
     
-    - name: pulumi
+    - name: pulumi backend infra
       if: steps.filter.outputs.games  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/games/t1/WebAPILambda
@@ -102,15 +103,24 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/infra-pulumi/Infra.Pulumi/Infra.Pulumi
         pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
+        export source_ami_id=$(aws ec2 describe-images --filters "Name=name,Values=stress-test-loader*" --query 'Images[*].[ImageId]' --output text)
         dotnet run --project-name stress-test-loader-pulumi --stack-name dev
       env:
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
         public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5
         stress_test_loader_allowed_cidr: "1.1.1.1/32"
-        source_ami_id: PROXY_NODE_SELFCHECK_AMI_ID
         environment: stresstest-git-action
+    
+    - name: pulumi destroy stress test infra
+      if: steps.filter.outputs.infra-pulumi  == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/infra-pulumi/Infra.Pulumi/Infra.Pulumi
+        pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
+        dotnet run --project-name stress-test-loader-pulumi --stack-name dev --destroy
+      env:
+        PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
         
-    - name: pulumi destroy
+    - name: pulumi destroy backend infra
       if: steps.filter.outputs.games  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/games/t1/backend
