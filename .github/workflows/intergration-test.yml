@@ -10,7 +10,7 @@ on:
   push:
     branches:
       - main
-      - wwu/infra-pulumi
+      - wwu/test-github-actions
   workflow_dispatch:
 
 concurrency:
