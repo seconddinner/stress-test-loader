@@ -104,6 +104,7 @@ jobs:
         cd $GITHUB_WORKSPACE/infra-pulumi/Infra.Pulumi/Infra.Pulumi
         pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
         export source_ami_id=$(aws ec2 describe-images --filters "Name=name,Values=stress-test-loader*" --query 'Images[*].[ImageId]' --output text)
+        echo $source_ami_id
         dotnet run --project-name stress-test-loader-pulumi --stack-name dev
       env:
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
