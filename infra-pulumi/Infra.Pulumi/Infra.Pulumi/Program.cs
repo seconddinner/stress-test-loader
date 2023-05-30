@@ -66,8 +66,11 @@ public class DeployPulumiCommand
                 Region = "us-west-2",
             });
 
-            var stressTestClientReadRole = new StressTestClientReadRole(clientS3BucketArn, clientLogsS3BucketArn,
-                new ComponentResourceOptions { Provider = provider });
+            var ami = new Ami("stl-ami");
+            var iam = new Iam("stl-iam");
+            var vpc = new Vpc("stl-vpc");
+            var autoscaling = new Autoscaling("stl-autoscaling", ami.AmiId, iam.StressTestClientReadProfileName
+                , vpc.MainVpcId, vpc.DefaultSecurityGroupId, vpc.MainSubnetIds);
 
         });
 
