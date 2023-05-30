@@ -34,7 +34,7 @@ class Autoscaling : ComponentResource
         {
             prometheus_node_allowed_cidr,
         };
-        var instance = new Aws.Ec2.SecurityGroup("stresstestSecurityGroup", new Aws.Ec2.SecurityGroupArgs
+        var stresstestSecurityGroup = new Aws.Ec2.SecurityGroup("stresstestSecurityGroup", new Aws.Ec2.SecurityGroupArgs
         {
             VpcId = mainVpcId,
             Ingress = 
@@ -120,7 +120,7 @@ class Autoscaling : ComponentResource
             KeyName = sdStresstest.KeyName,
             SecurityGroups = 
             {
-                defaultSecurityGroupId,
+                stresstestSecurityGroup.Id,
             },
             RootBlockDevice = new Aws.Ec2.Inputs.LaunchConfigurationRootBlockDeviceArgs
             {
