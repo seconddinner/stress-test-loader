@@ -83,6 +83,7 @@ jobs:
         role-session-name: stresstest-loader-githubaction-aws-role
     
     - name: pulumi
+      if: steps.filter.outputs.games  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/games/t1/WebAPILambda
         dotnet  publish  -c Release -r linux-arm64 --no-self-contained
@@ -112,6 +113,7 @@ jobs:
         environment: stresstest-git-action
         
     - name: pulumi destroy
+      if: steps.filter.outputs.games  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/games/t1/backend
         pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
