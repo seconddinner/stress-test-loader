@@ -88,20 +88,29 @@ public static class DeployHelpers
         {
             environment = "stresstest-git-action";
         }
+        string desired_capacity;
+        try
+        {
+            desired_capacity = Environment.GetEnvironmentVariable("desired_capacity");
+        }
+        finally
+        {
+            desired_capacity = "2";
+        }
         var config = new Dictionary<string, ConfigValue>
         {
             { "aws:region", new ConfigValue("us-west-2") },
             { "aws-native:region", new ConfigValue("us-west-2") },
             { "stress-test-loader-pulumi:az_count", new ConfigValue("2") },
             { "stress-test-loader-pulumi:cidr_block", new ConfigValue("10.10.0.0/16") },
-            { "stress-test-loader-pulumi:desired_capacity", new ConfigValue("1") },
             { "stress-test-loader-pulumi:up_scaling_adjustment", new ConfigValue("-1") },
             { "stress-test-loader-pulumi:down_scaling_adjustment", new ConfigValue("-1") },
             { "stress-test-loader-pulumi:egress_allowed_cidr", new ConfigValue("0.0.0.0/0") },
             { "stress-test-loader-pulumi:environment", new ConfigValue(environment) },
             { "stress-test-loader-pulumi:iam_name", new ConfigValue("stress_test_client_read_profile-stress_test_loader") },
             { "stress-test-loader-pulumi:instance_type", new ConfigValue("t4g.nano") },
-            { "stress-test-loader-pulumi:max_size", new ConfigValue("3") },
+            { "stress-test-loader-pulumi:desired_capacity", new ConfigValue(desired_capacity) },
+            { "stress-test-loader-pulumi:max_size", new ConfigValue("10") },
             { "stress-test-loader-pulumi:min_size", new ConfigValue("1") },
             { "stress-test-loader-pulumi:name", new ConfigValue("stl-stress_test_loader-cluster") },
             { "stress-test-loader-pulumi:prometheus_node_allowed_cidr", new ConfigValue("0.0.0.0/0") },
