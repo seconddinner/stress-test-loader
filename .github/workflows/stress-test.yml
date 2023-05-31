@@ -43,15 +43,16 @@ jobs:
         cd bin/Release
         cd "$(ls -d */ | head -n 1)"
         cd linux-arm64/publish
+        export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
         tar czf /tmp/s3_key.tgz ./
         aws s3 cp /tmp/s3_key.tgz s3://$s3_bucket_name/$s3_key
       env:
         s3_bucket_name: stresstest-client
-        s3_key: simple-stress-test-client-${GITHUB_SHA::7}.tgz
 
     - name: run stress test
       run: |
         cd $GITHUB_WORKSPACE/stress-test-loader/client
+        export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
         json='{
             "s3": "$s3_bucket_name",
             "s3key": "$s3_key",
@@ -72,14 +73,12 @@ jobs:
             ]
         }'
         echo "$json" > stresstest.json
-        aws ec2 describe-instances --region $aws-region \
+        aws ec2 describe-instances --region $AWS_REGION \
           --query 'Reservations[*].Instances[*].{"public_ip":PublicIpAddress}' \
           --filters Name=instance-state-name,Values=running --output json > /tmp/IP.json
         go run main.go stresstest.json /tmp/IP.json
       env:
-        aws-region: us-west-2
         s3_bucket_name: stresstest-client
-        s3_key: simple-stress-test-client-${GITHUB_SHA::7}.tgz
         exec_name: StressTest
         env1_name: num_pings
         env1_value: 10
