@@ -164,6 +164,9 @@ jobs:
         env3_name: host
         env3_value: www.apple.com
     
+    - name: Wait for 5 minutes
+      run: sleep 300
+
     - name: pulumi destroy stress test infra
       #if: steps.filter.outputs.infra-pulumi  == 'true'
       run: |
