@@ -166,8 +166,8 @@ jobs:
         env3_name: ${{ vars.ENV3_NAME }}
         env3_value: ${{ vars.ENV3_VALUE }}
     
-    - name: Wait for 5 minutes
-      run: sleep 300
+    - name: Wait for stress test to finish (sleep for ${{ vars.STRESS_TEST_TIME }} seconds)
+      run: sleep ${{ vars.STRESS_TEST_TIME }}
 
     - name: pulumi destroy stress test infra
       #if: steps.filter.outputs.infra-pulumi  == 'true'
