@@ -10,7 +10,7 @@ on:
   push:
     branches:
       - main
-      #- wwu/test-github-actions
+      - wwu/test-github-actions
   workflow_dispatch:
 
 concurrency:
@@ -101,13 +101,65 @@ jobs:
       #if: steps.filter.outputs.infra-pulumi  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/infra-pulumi/Infra.Pulumi/Infra.Pulumi
+        public_ip=$(curl -s https://ipinfo.io/ip)
+        export stress_test_loader_allowed_cidr="$public_ip/32"
         pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
         dotnet run --project-name stress-test-loader-pulumi --stack-name dev
       env:
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
         public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5
-        stress_test_loader_allowed_cidr: "1.1.1.1/32"
         environment: stresstest-git-action
+
+    - name: simple stress test client build
+      run: |
+        cd $GITHUB_WORKSPACE/simple-stress-test-client/StressTest
+        dotnet publish -r linux-arm64 --self-contained true -c Release
+        cd bin/Release
+        cd "$(ls -d */ | head -n 1)"
+        cd linux-arm64/publish
+        export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
+        tar czf /tmp/s3_key.tgz ./
+        aws s3 cp /tmp/s3_key.tgz s3://$s3_bucket_name/$s3_key
+      env:
+        s3_bucket_name: stresstest-client
+
+    - name: run stress test
+      run: |
+        cd $GITHUB_WORKSPACE/stress-test-loader/client
+        export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
+        json='{
+            "s3": "$s3_bucket_name",
+            "s3key": "$s3_key",
+            "loadtestExec": "$exec_name",
+            "envVariableList": [
+                {
+                    "EnvName": "$env1_name",
+                    "EnvValue": "$env1_value"
+                },
+                {
+                    "EnvName": "$env2_name",
+                    "EnvValue": "$env2_value"
+                },
+                {
+                    "EnvName": "$env3_name",
+                    "EnvValue": "$env3_value"
+                }
+            ]
+        }'
+        echo "$json" > stresstest.json
+        aws ec2 describe-instances --region $AWS_REGION \
+          --query 'Reservations[*].Instances[*].{"public_ip":PublicIpAddress}' \
+          --filters Name=instance-state-name,Values=running --output json > /tmp/IP.json
+        go run main.go stresstest.json /tmp/IP.json
+      env:
+        s3_bucket_name: stresstest-client
+        exec_name: StressTest
+        env1_name: num_pings
+        env1_value: 10
+        env2_name: ping_interval
+        env2_value: 500
+        env3_name: host
+        env3_value: www.apple.com
     
     - name: pulumi destroy stress test infra
       #if: steps.filter.outputs.infra-pulumi  == 'true'
