@@ -143,8 +143,6 @@ jobs:
         fetch-depth: 0
 
     - name: AWS Setup
-      if: |
-        steps.filter.outputs.infra-pulumi  == 'true' || steps.filter.outputs.games  == 'true'
       uses: aws-actions/configure-aws-credentials@v1-node16
       with:
         aws-region: us-west-2
