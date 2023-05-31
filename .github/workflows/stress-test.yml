@@ -45,7 +45,7 @@ jobs:
         cd linux-arm64/publish
         tar czf /tmp/s3_key.tgz ./
         aws s3 cp /tmp/s3_key.tgz s3://${{ s3_bucket_name }}/s3_key.tgz
-      with:
+      env:
         s3_bucket_name: stresstest-client
         s3_key: simple-stress-test-client-${GITHUB_SHA::7}
 
@@ -76,7 +76,7 @@ jobs:
           --query 'Reservations[*].Instances[*].{"public_ip":PublicIpAddress}' \
           --filters Name=instance-state-name,Values=running --output json > /tmp/IP.json
         go run main.go stresstest.json /tmp/IP.json
-      with:
+      env:
         s3_bucket_name: stresstest-client
         s3_key: simple-stress-test-client-${GITHUB_SHA::7}
         exec_name: StressTest
