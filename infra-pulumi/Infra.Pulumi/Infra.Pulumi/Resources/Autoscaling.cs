@@ -1,5 +1,7 @@
 ﻿using Pulumi;
 using Aws = Pulumi.Aws;
+using System.IO;
+using System.Text.Json;
 
 namespace Infra.Pulumi.Resources;
 

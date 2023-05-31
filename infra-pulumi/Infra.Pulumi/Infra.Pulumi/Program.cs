@@ -71,7 +71,7 @@ public class DeployPulumiCommand
             var vpc = new Vpc("stl-vpc");
             var autoscaling = new Autoscaling("stl-autoscaling", ami.AmiId, iam.StressTestClientReadProfileName
                 , vpc.MainVpcId, vpc.DefaultSecurityGroupId, vpc.MainSubnetIds);
-
+            var getPublicIp = new GetPublicIp("stl-get-public-ip", ami.AmiId);
         });
 
         if (Destroy)
