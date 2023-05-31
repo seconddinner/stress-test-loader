@@ -127,7 +127,8 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/stress-test-loader/client
         export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
-        json='{
+        json=$(cat <<EOF
+        {
             "s3": "$s3_bucket_name",
             "s3key": "$s3_key",
             "loadtestExec": "$exec_name",
@@ -145,7 +146,9 @@ jobs:
                     "EnvValue": "$env3_value"
                 }
             ]
-        }'
+        }
+        EOF
+        )
         echo "$json" > stresstest.json
         aws ec2 describe-instances --region $AWS_REGION \
           --query 'Reservations[*].Instances[*].{"public_ip":PublicIpAddress}' \
@@ -166,10 +169,10 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/infra-pulumi/Infra.Pulumi/Infra.Pulumi
         pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
-        dotnet run --project-name stress-test-loader-pulumi --stack-name dev --destroy
+
       env:
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
-        public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB04L+iBL3YLCMTVl9S5gIEQZPsuNVExl54YNUB3oZD5
+        public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCymd5Ebc+KPTttoTv9c3ff8ThKZHQ3ZGwzmzZA2pXrHtX2mkzHZDOD1q5WoIla8VOgIyl7YEj8szNm6GwI9LH9Q53UEvZ915QLqOyLmqBHjiKYF9bifYCSuerGqh0x/EZZM6qAmjEKmdshCkm9Y6OID+3YmUM5j677bgK/tSc6P8UDZgAhegZaBkeuXJRjN0DonAq4F+s//4kTX44+WmfaV0y97YruD67BqC3YCyDeK4DuonrhhxpCrHbDehYx1juwitAngD6yY7UrukFHecDxM7vkNKoLvbaVYuAQi8phsBhNaU//d6PetTP2omx07CP5A6i7KWw3zRX/x087MGERZw0OTJLjVn2lRvuq2cvpHFxGeBZWGudP77VLCXmArSaoxuQ6l0DbyJnfcdRJIevF0mn+ZMA+LlYHJ+mbaQfWqml6snJz9ForzkLfJDhav7dRm2FWowGthQwKcVdHI8rZgwUF9uYA15QgsZzxByz4ar1mKsdFLm1g8w/z8bFn1GYXw6uImQeM8UElCEWDsxzqQCmRGtqrM62yEwioVdSFhoOuc9HeNyhx53rmn5Gryg3fjv//RLuoAOqrelNGK28x19MR2/P0elT1izZT673yDn61p4cP3pEcrp6bnUlrMG/2ZTWU+Mj54mPZiYvtoIaYSwGsHglJaVzGTXnnStoNnw==
         stress_test_loader_allowed_cidr: "1.1.1.1/32"
         environment: stresstest-git-action
         
@@ -185,28 +188,3 @@ jobs:
         dotnet run destroy
       env:
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
-
-  stresstest-start-test:
-    runs-on: ubuntu-latest
-    #container: seconddinner/build:0.0.5
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-
-    - name: AWS Setup
-      uses: aws-actions/configure-aws-credentials@v1-node16
-      with:
-        aws-region: us-west-2
-        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-        role-session-name: stresstest-loader-githubaction-aws-role
-
-    - name: simple stress test client build
-      run: |
-        cd $GITHUB_WORKSPACE/simple-stress-test-client/StressTest
-        dotnet publish -r linux-arm64 --self-contained true -c Release
-        cd bin/Release
-        cd "$(ls -d */ | head -n 1)"
-        cd linux-arm64/publish
-        tar czf /tmp/simple-stress-test-client-${GITHUB_SHA::7}.tgz ./
-        aws s3 cp /tmp/simple-stress-test-client-${GITHUB_SHA::7}.tgz s3://stresstest-client/simple-stress-test-client-${GITHUB_SHA::7}.tgz
