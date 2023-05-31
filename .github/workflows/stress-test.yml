@@ -77,6 +77,7 @@ jobs:
           --filters Name=instance-state-name,Values=running --output json > /tmp/IP.json
         go run main.go stresstest.json /tmp/IP.json
       env:
+        aws-region: us-west-2
         s3_bucket_name: stresstest-client
         s3_key: simple-stress-test-client-${GITHUB_SHA::7}.tgz
         exec_name: StressTest
