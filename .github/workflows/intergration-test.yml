@@ -152,9 +152,6 @@ jobs:
         EOF
         )
         echo "$json" > stresstest.json
-        aws ec2 describe-instances --region $AWS_REGION \
-          --query 'Reservations[*].Instances[*].{"public_ip":PublicIpAddress}' \
-          --filters Name=instance-state-name,Values=running --output json > /tmp/IP.json
         go run main.go stresstest.json /tmp/IP.json
       env:
         s3_bucket_name: ${{ vars.S3_BUCKET_NAME }}
@@ -174,7 +171,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/infra-pulumi/Infra.Pulumi/Infra.Pulumi
         pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
-
+        dotnet run --project-name stress-test-loader-pulumi --stack-name dev --destroy
       env:
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
         public_key: ${{ vars.PUBLIC_KEY }}
