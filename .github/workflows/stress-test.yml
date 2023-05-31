@@ -49,7 +49,7 @@ jobs:
         s3_bucket_name: stresstest-client
         s3_key: simple-stress-test-client-${GITHUB_SHA::7}
 
-    -name: run stress test
+    - name: run stress test
       run: |
         cd $GITHUB_WORKSPACE/stress-test-loader/client
         json='{
