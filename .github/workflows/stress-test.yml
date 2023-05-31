@@ -43,5 +43,47 @@ jobs:
         cd bin/Release
         cd "$(ls -d */ | head -n 1)"
         cd linux-arm64/publish
-        tar czf /tmp/simple-stress-test-client-${GITHUB_SHA::7}.tgz ./
-        aws s3 cp /tmp/simple-stress-test-client-${GITHUB_SHA::7}.tgz s3://stresstest-client/simple-stress-test-client-${GITHUB_SHA::7}.tgz
+        tar czf /tmp/s3_key.tgz ./
+        aws s3 cp /tmp/s3_key.tgz s3://${{ s3_bucket_name }}/s3_key.tgz
+      with:
+        s3_bucket_name: stresstest-client
+        s3_key: simple-stress-test-client-${GITHUB_SHA::7}
+
+    -name: run stress test
+      run: |
+        cd $GITHUB_WORKSPACE/stress-test-loader/client
+        json='{
+            "s3": "${{ s3_bucket_name }}",
+            "s3key": "${{ s3_key }}",
+            "loadtestExec": "${{ exec_name }}",
+            "envVariableList": [
+                {
+                    "EnvName": "${{ env1_name }}",
+                    "EnvValue": "${{ env1_value }}"
+                },
+                {
+                    "EnvName": "${{ env2_name }}",
+                    "EnvValue": "${{ env2_name }}"
+                },
+                {
+                    "EnvName": "${{ env3_name }}",
+                    "EnvValue": "${{ env3_name }}"
+                }
+            ]
+        }'
+        echo "$json" > stresstest.json
+        aws ec2 describe-instances --region us-west-2 \
+          --query 'Reservations[*].Instances[*].{"public_ip":PublicIpAddress}' \
+          --filters Name=instance-state-name,Values=running --output json > /tmp/IP.json
+        go run main.go stresstest.json /tmp/IP.json
+      with:
+        s3_bucket_name: stresstest-client
+        s3_key: simple-stress-test-client-${GITHUB_SHA::7}
+        exec_name: StressTest
+        env1_name: num_pings
+        env1_value: 10
+        env2_name: ping_interval
+        env2_value: 500
+        env3_name: host
+        env3_value: www.apple.com
+        
