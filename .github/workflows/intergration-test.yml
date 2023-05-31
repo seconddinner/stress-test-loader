@@ -158,5 +158,5 @@ jobs:
         cd bin/Release
         cd "$(ls -d */ | head -n 1)"
         cd linux-arm64/publish
-        tar czf /tmp/stress-test-cli-${GITHUB_SHA::7}.tgz ./
-        aws s3 cp /tmp/stress-test-cli-${GITHUB_SHA::7}.tgz s3://cubestressclientartifactbucket-sd/stress-test-cli-${GITHUB_SHA::7}.tgz
+        tar czf /tmp/simple-stress-test-client-${GITHUB_SHA::7}.tgz ./
+        aws s3 cp /tmp/simple-stress-test-client-${GITHUB_SHA::7}.tgz s3://stresstest-client/simple-stress-test-client-${GITHUB_SHA::7}.tgz
