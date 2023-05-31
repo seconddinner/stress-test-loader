@@ -79,24 +79,9 @@ public static class DeployHelpers
         };
         string localPublicIp = Environment.GetEnvironmentVariable("stress_test_loader_allowed_cidr");
         string publicKey = Environment.GetEnvironmentVariable("public_key");
-        string environment;
-        try
-        {
-            environment = Environment.GetEnvironmentVariable("environment");
-        }
-        finally
-        {
-            environment = "stresstest-git-action";
-        }
-        string desired_capacity;
-        try
-        {
-            desired_capacity = Environment.GetEnvironmentVariable("desired_capacity");
-        }
-        finally
-        {
-            desired_capacity = "2";
-        }
+        string environment = Environment.GetEnvironmentVariable("environment") ?? "stresstest-git-action";
+        string desiredCapacity = Environment.GetEnvironmentVariable("desired_capacity") ?? "2";
+        
         var config = new Dictionary<string, ConfigValue>
         {
             { "aws:region", new ConfigValue("us-west-2") },
@@ -109,7 +94,7 @@ public static class DeployHelpers
             { "stress-test-loader-pulumi:environment", new ConfigValue(environment) },
             { "stress-test-loader-pulumi:iam_name", new ConfigValue("stress_test_client_read_profile-stress_test_loader") },
             { "stress-test-loader-pulumi:instance_type", new ConfigValue("t4g.nano") },
-            { "stress-test-loader-pulumi:desired_capacity", new ConfigValue(desired_capacity) },
+            { "stress-test-loader-pulumi:desired_capacity", new ConfigValue(desiredCapacity) },
             { "stress-test-loader-pulumi:max_size", new ConfigValue("10") },
             { "stress-test-loader-pulumi:min_size", new ConfigValue("1") },
             { "stress-test-loader-pulumi:name", new ConfigValue("stl-stress_test_loader-cluster") },
