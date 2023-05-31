@@ -1,0 +1,48 @@
+name: build-test
+
+on:
+  # we are only going to run it on PR
+  pull_request:
+    paths-ignore: [ '*.md' ]
+    branches:
+      - main
+      - '**'
+  push:
+    branches:
+      - main
+      - wwu/test-github-actions
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+
+  stresstest-start-test:
+    runs-on: ubuntu-latest
+    container: seconddinner/build:0.0.5
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: AWS Setup
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-region: us-west-2
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-session-name: stresstest-loader-githubaction-aws-role
+
+    - name: simple stress test client build
+      run: |
+        cd $GITHUB_WORKSPACE/simple-stress-test-client/StressTest
+        dotnet publish -r linux-arm64 --self-contained true -c Release
+        cd bin/Release
+        cd "$(ls -d */ | head -n 1)"
+        cd linux-arm64/publish
+        tar czf /tmp/simple-stress-test-client-${GITHUB_SHA::7}.tgz ./
+        aws s3 cp /tmp/simple-stress-test-client-${GITHUB_SHA::7}.tgz s3://stresstest-client/simple-stress-test-client-${GITHUB_SHA::7}.tgz
