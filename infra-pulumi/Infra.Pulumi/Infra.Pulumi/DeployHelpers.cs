@@ -77,7 +77,6 @@ public static class DeployHelpers
         {
             { "aws", "v4.24.1" },
         };
-        string sourceAmiId = Environment.GetEnvironmentVariable("source_ami_id");
         string localPublicIp = Environment.GetEnvironmentVariable("stress_test_loader_allowed_cidr");
         string publicKey = Environment.GetEnvironmentVariable("public_key");
         string environment;
@@ -108,7 +107,6 @@ public static class DeployHelpers
             { "stress-test-loader-pulumi:prometheus_node_allowed_cidr", new ConfigValue("0.0.0.0/0") },
             { "stress-test-loader-pulumi:public_ip_on_launch", new ConfigValue("true") },
             // NOTE: make public key, ami id, and public ip env var.
-            { "stress-test-loader-pulumi:source_ami_id", new ConfigValue(sourceAmiId) },
             { "stress-test-loader-pulumi:source_ami_region", new ConfigValue("us-west-2") },
             { "stress-test-loader-pulumi:ssh_allowed_cidr", new ConfigValue($"[{localPublicIp}]") },
             { "stress-test-loader-pulumi:stress_test_loader_port", new ConfigValue("9005") },

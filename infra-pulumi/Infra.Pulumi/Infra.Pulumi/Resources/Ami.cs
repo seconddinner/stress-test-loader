@@ -1,5 +1,6 @@
 ﻿using Pulumi;
 using Aws = Pulumi.Aws;
+using Pulumi.Aws.Ec2;
 
 namespace Infra.Pulumi.Resources;
 
@@ -14,10 +15,23 @@ class Ami : ComponentResource
         var config = new Config();
 
         // Set up AMI
+        var amiFilter = new Aws.Ec2.Inputs.GetAmiFilterArgs
+        {
+            Name = "name",
+            Values = { "stress-test-loader*" }
+        };
+
+        var amiId = Output.Create(Aws.Ec2.GetAmi.InvokeAsync(new GetAmiArgs
+        {
+            Filters = { amiFilter },
+            Owners = { "self" },
+            MostRecent = true
+        })).Apply(result => result.Id);
+
         var stl = new Aws.Ec2.AmiCopy("stl", new Aws.Ec2.AmiCopyArgs
         {
             Name = config.Require("name"),
-            SourceAmiId = config.Require("source_ami_id"),
+            SourceAmiId = amiId,
             SourceAmiRegion = config.Require("source_ami_region")
         });
 
