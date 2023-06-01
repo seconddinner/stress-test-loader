@@ -4,6 +4,8 @@ using McMaster.Extensions.CommandLineUtils;
 using Pulumi;
 using Pulumi.Automation;
 using Pulumi.Aws;
+using Config = Pulumi.Config;
+
 #pragma warning disable CS1998
 
 namespace Infra.Pulumi;
