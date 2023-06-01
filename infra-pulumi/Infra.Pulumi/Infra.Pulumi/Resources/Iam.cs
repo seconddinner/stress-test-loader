@@ -35,6 +35,7 @@ class Iam : ComponentResource
         }, new CustomResourceOptions
         {
           Provider = provider,
+          Parent = this
         });
         var stressTestClientReadProfile = new Aws.Iam.InstanceProfile("stressTestClientReadProfile-" + region, new Aws.Iam.InstanceProfileArgs
         {
@@ -42,6 +43,7 @@ class Iam : ComponentResource
         }, new CustomResourceOptions
         {
           Provider = provider,
+          Parent = this
         });
         this.StressTestClientReadProfileName = stressTestClientReadProfile.Name;
         var stressTestClientRead = new Aws.Iam.RolePolicy("stressTestClientRead-" + region, new Aws.Iam.RolePolicyArgs
@@ -70,8 +72,10 @@ class Iam : ComponentResource
         }, new CustomResourceOptions
         {
           Provider = provider,
+          Parent = this
         });
-
+        
+        RegisterOutputs();
     }
 }
 

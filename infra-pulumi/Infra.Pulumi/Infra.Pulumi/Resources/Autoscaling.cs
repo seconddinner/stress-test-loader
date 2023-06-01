@@ -28,6 +28,7 @@ class Autoscaling : ComponentResource
         }, new CustomResourceOptions
         {
             Provider = provider,
+            Parent = this
         });
         this.KeyPairName = sdStresstest.KeyName;
 
@@ -108,6 +109,7 @@ class Autoscaling : ComponentResource
         }, new CustomResourceOptions
         {
             Provider = provider,
+            Parent = this
         });
         
         // Prepare user data
@@ -143,6 +145,7 @@ class Autoscaling : ComponentResource
         }, new CustomResourceOptions
         {
             Provider = provider,
+            Parent = this
         });
 
         // var vpcZoneIdentifiers = new InputList<string>();
@@ -191,6 +194,7 @@ class Autoscaling : ComponentResource
         }, new CustomResourceOptions
         {
             Provider = provider,
+            Parent = this
         });
         this.WebAutoScalingGroupName = stressTestLoaderGroup.Name;
         StorePublicIpsToJson(stressTestLoaderGroup, amiId, provider);
@@ -205,6 +209,7 @@ class Autoscaling : ComponentResource
         }, new CustomResourceOptions
         {
             Provider = provider,
+            Parent = this
         });
         // auto scale down policy
         var stressTestLoaderDownPolicy = new Aws.AutoScaling.Policy("stressTestLoaderDownPolicy-" + region, new Aws.AutoScaling.PolicyArgs
@@ -216,6 +221,7 @@ class Autoscaling : ComponentResource
         }, new CustomResourceOptions
         {
             Provider = provider,
+            Parent = this
         });
         var stressTestLoaderUpMetricAlarm = new Aws.CloudWatch.MetricAlarm("stressTestLoaderUpMetricAlarm-" + region, new Aws.CloudWatch.MetricAlarmArgs
         {
@@ -238,6 +244,7 @@ class Autoscaling : ComponentResource
         }, new CustomResourceOptions
         {
             Provider = provider,
+            Parent = this
         });
         var stressTestLoaderDownMetricAlarm = new Aws.CloudWatch.MetricAlarm("stressTestLoaderDownMetricAlarm-" + region, new Aws.CloudWatch.MetricAlarmArgs
         {
@@ -260,7 +267,10 @@ class Autoscaling : ComponentResource
         }, new CustomResourceOptions
         {
             Provider = provider,
+            Parent = this
         });
+        
+        RegisterOutputs();
     }
 
     public void StorePublicIpsToJson(Aws.AutoScaling.Group stressTestLoaderGroup, Input<string> amiId, Aws.Provider provider)

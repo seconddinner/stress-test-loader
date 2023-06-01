@@ -10,7 +10,6 @@ on:
   push:
     branches:
       - main
-      - wwu/test-github-actions
   workflow_dispatch:
 
 concurrency:
