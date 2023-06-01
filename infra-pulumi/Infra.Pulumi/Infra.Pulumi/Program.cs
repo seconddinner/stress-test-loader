@@ -57,9 +57,6 @@ public class DeployPulumiCommand
             Environment.SetEnvironmentVariable(k, v);
         }
 
-        const string clientS3BucketArn = "arn:aws:s3:::stresstest-client";
-        const string clientLogsS3BucketArn = "arn:aws:s3:::stresstest-client-log";
-
         #region Deploy
         var program = PulumiFn.Create(async () =>
         {

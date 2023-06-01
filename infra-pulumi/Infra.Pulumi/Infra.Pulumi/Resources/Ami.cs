@@ -36,12 +36,12 @@ class Ami : ComponentResource
         }, new CustomResourceOptions
         {
             Provider = provider,
+            Parent = this
         });
 
         this.AmiId = stl.Id;
-
-        // Signal to the UI that this resource has completed construction.
-        this.RegisterOutputs();
+        
+        RegisterOutputs();
     }
 }
 

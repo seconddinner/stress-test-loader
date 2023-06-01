@@ -41,6 +41,7 @@ class Vpc : ComponentResource
         }, new CustomResourceOptions
         {
             Provider = provider,
+            Parent = this
         });
         this.MainVpcId = mainVpc.Id;
 
@@ -74,12 +75,9 @@ class Vpc : ComponentResource
         }, new CustomResourceOptions
         {
             Provider = provider,
+            Parent = this
         });
         this.DefaultSecurityGroupId = defaultSecurityGroup.Id;
-        // defaultSecurityGroup.Id.Apply(id => {
-        //     Console.WriteLine($"Default Security Group ID: {id}");
-        //     return id;
-        // });
 
         var mainSubnet = new List<Aws.Ec2.Subnet>();
         InputList<string> mainSubnetIds = Output.Create(new List<string>());
@@ -95,6 +93,7 @@ class Vpc : ComponentResource
             }, new CustomResourceOptions
             {
                 Provider = provider,
+                Parent = this
             });
             mainSubnet.Add(subnet);
             mainSubnetIds.Add(subnet.Id);
@@ -107,6 +106,7 @@ class Vpc : ComponentResource
         }, new CustomResourceOptions
         {
             Provider = provider,
+            Parent = this
         });
         var routeTable = new Aws.Ec2.RouteTable("routeTable-" + region, new Aws.Ec2.RouteTableArgs
         {
@@ -122,6 +122,7 @@ class Vpc : ComponentResource
         }, new CustomResourceOptions
         {
             Provider = provider,
+            Parent = this
         });
         var routeTableAssociation = new List<Aws.Ec2.RouteTableAssociation>();
         for (var rangeIndex = 0; rangeIndex < int.Parse(config.Require("az_count")); rangeIndex++)
@@ -134,8 +135,11 @@ class Vpc : ComponentResource
             }, new CustomResourceOptions
             {
                 Provider = provider,
+                Parent = this
             }));
         }
+        
+        RegisterOutputs();
     }
 
     public Output<string> ReplaceIPandCIDR(Output<string> input, int rangeIndex)
