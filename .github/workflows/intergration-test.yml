@@ -10,7 +10,6 @@ on:
   push:
     branches:
       - main
-      - wwu/test-github-actions
   workflow_dispatch:
 
 concurrency:
@@ -111,6 +110,7 @@ jobs:
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
         public_key: ${{ vars.PUBLIC_KEY }}
         environment: ${{ vars.ENVIRONMENT }}
+        regions: ${{ vars.REGIONS }}
 
     - name: simple stress test client build
       run: |
