@@ -190,3 +190,10 @@ jobs:
         dotnet run destroy
       env:
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+
+    - name: delete simple stress test client exec in s3
+      run: |
+        export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
+        aws s3 rm s3://$s3_bucket_name/$s3_key
+      env:
+        s3_bucket_name: ${{ vars.S3_BUCKET_NAME }}
