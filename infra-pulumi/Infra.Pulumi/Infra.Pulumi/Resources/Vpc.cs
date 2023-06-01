@@ -1,6 +1,7 @@
 ﻿using Pulumi;
 using Aws = Pulumi.Aws;
 using System.Collections.Immutable;
+using Pulumi.Aws.Inputs;
 
 namespace Infra.Pulumi.Resources;
 
@@ -13,21 +14,38 @@ class Vpc : ComponentResource
     [Output]
     public Output<ImmutableArray<string>> MainSubnetIds { get; set; }
 
-    public Vpc(string name, ComponentResourceOptions opts = null) : base("stl:aws:Vpc", name, null)
+    public Vpc(string name, Aws.Provider provider, string region, ComponentResourceOptions opts = null) : base("stl:aws:Vpc", name, null)
     {
         // Set up Config
         var config = new Config();
 
         // Set up a VPC
-        var available = Output.Create(Aws.GetAvailabilityZones.InvokeAsync());
-        var mainVpc = new Aws.Ec2.Vpc("mainVpc", new Aws.Ec2.VpcArgs
+        var available = Output.Create(Aws.GetAvailabilityZones.InvokeAsync(new Aws.GetAvailabilityZonesArgs()
+        {
+            Filters = 
+            {
+                new GetAvailabilityZonesFilterArgs()
+                {
+                    Name = "region-name",
+                    Values = { region }
+                }
+            }
+        }, new InvokeOptions
+        {
+            Provider = provider
+        }));
+        
+        var mainVpc = new Aws.Ec2.Vpc("mainVpc-" + region, new Aws.Ec2.VpcArgs
         {
             CidrBlock = config.Require("cidr_block"), // default 10.10.0.0/16
+        }, new CustomResourceOptions
+        {
+            Provider = provider,
         });
         this.MainVpcId = mainVpc.Id;
 
         // Create a default security group for the VPC
-        var defaultSecurityGroup = new Aws.Ec2.DefaultSecurityGroup(string.Format("stress_test_loader-instance-{0}", config.Require("environment")), new Aws.Ec2.DefaultSecurityGroupArgs
+        var defaultSecurityGroup = new Aws.Ec2.DefaultSecurityGroup(string.Format("stress_test_loader-instance-{0}-" + region, config.Require("environment")), new Aws.Ec2.DefaultSecurityGroupArgs
         {
             VpcId = mainVpc.Id,
             Ingress = 
@@ -53,6 +71,9 @@ class Vpc : ComponentResource
                     },
                 },
             },
+        }, new CustomResourceOptions
+        {
+            Provider = provider,
         });
         this.DefaultSecurityGroupId = defaultSecurityGroup.Id;
         // defaultSecurityGroup.Id.Apply(id => {
@@ -65,23 +86,29 @@ class Vpc : ComponentResource
         for (var rangeIndex = 0; rangeIndex < int.Parse(config.Require("az_count")); rangeIndex++)
         {
             var range = new { Value = rangeIndex };
-            var subnet = new Aws.Ec2.Subnet($"mainSubnet-{range.Value}", new Aws.Ec2.SubnetArgs
+            var subnet = new Aws.Ec2.Subnet($"mainSubnet-{range.Value}-" + region, new Aws.Ec2.SubnetArgs
             {
-                AvailabilityZone = available.Apply(available => available.Names[range.Value]),
+                AvailabilityZone = available.Apply(av => av.Names[range.Value]),
                 VpcId = mainVpc.Id,
                 MapPublicIpOnLaunch = bool.Parse(config.Require("public_ip_on_launch")),
                 CidrBlock = ReplaceIPandCIDR(mainVpc.CidrBlock, rangeIndex), // e.g., 10.10.0.0/22, 10.10.4.0/22
+            }, new CustomResourceOptions
+            {
+                Provider = provider,
             });
             mainSubnet.Add(subnet);
             mainSubnetIds.Add(subnet.Id);
         }
         this.MainSubnetIds = mainSubnetIds;
         
-        var gw = new Aws.Ec2.InternetGateway("gw", new Aws.Ec2.InternetGatewayArgs
+        var gw = new Aws.Ec2.InternetGateway("gw-" + region, new Aws.Ec2.InternetGatewayArgs
         {
             VpcId = mainVpc.Id,
+        }, new CustomResourceOptions
+        {
+            Provider = provider,
         });
-        var routeTable = new Aws.Ec2.RouteTable("routeTable", new Aws.Ec2.RouteTableArgs
+        var routeTable = new Aws.Ec2.RouteTable("routeTable-" + region, new Aws.Ec2.RouteTableArgs
         {
             VpcId = mainVpc.Id,
             Routes = 
@@ -92,15 +119,21 @@ class Vpc : ComponentResource
                     GatewayId = gw.Id,
                 },
             },
+        }, new CustomResourceOptions
+        {
+            Provider = provider,
         });
         var routeTableAssociation = new List<Aws.Ec2.RouteTableAssociation>();
         for (var rangeIndex = 0; rangeIndex < int.Parse(config.Require("az_count")); rangeIndex++)
         {
             var range = new { Value = rangeIndex };
-            routeTableAssociation.Add(new Aws.Ec2.RouteTableAssociation($"routeTableAssociation-{range.Value}", new Aws.Ec2.RouteTableAssociationArgs
+            routeTableAssociation.Add(new Aws.Ec2.RouteTableAssociation($"routeTableAssociation-{range.Value}-" + region, new Aws.Ec2.RouteTableAssociationArgs
             {
                 SubnetId = mainSubnet.Select(__item => __item.Id).ToList()[range.Value],
                 RouteTableId = routeTable.Id,
+            }, new CustomResourceOptions
+            {
+                Provider = provider,
             }));
         }
     }
