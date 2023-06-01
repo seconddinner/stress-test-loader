@@ -81,13 +81,11 @@ public static class DeployHelpers
         string publicKey = Environment.GetEnvironmentVariable("public_key");
         string environment = Environment.GetEnvironmentVariable("environment") ?? "stresstest-git-action";
         string desiredCapacity = Environment.GetEnvironmentVariable("desired_capacity") ?? "2";
-        string regions = Environment.GetEnvironmentVariable("regions") ?? "us-west-2";
         
         var config = new Dictionary<string, ConfigValue>
         {
             { "aws:region", new ConfigValue("us-west-2") },
             { "aws-native:region", new ConfigValue("us-west-2") },
-            { "stress-test-loader-pulumi:regions", new ConfigValue($"[{regions}]") },
             { "stress-test-loader-pulumi:az_count", new ConfigValue("2") },
             { "stress-test-loader-pulumi:cidr_block", new ConfigValue("10.10.0.0/16") },
             { "stress-test-loader-pulumi:up_scaling_adjustment", new ConfigValue("-1") },
