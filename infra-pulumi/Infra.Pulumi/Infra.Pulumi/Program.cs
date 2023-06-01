@@ -4,6 +4,8 @@ using McMaster.Extensions.CommandLineUtils;
 using Pulumi;
 using Pulumi.Automation;
 using Pulumi.Aws;
+using Config = Pulumi.Config;
+
 #pragma warning disable CS1998
 
 namespace Infra.Pulumi;
@@ -61,17 +63,40 @@ public class DeployPulumiCommand
         #region Deploy
         var program = PulumiFn.Create(async () =>
         {
-            var provider = new Provider("us-west-2", new()
+            var config = new Config();
+            List<string> regionList = new List<string>();
+            if (config.Get("regions") != null)
             {
-                Region = "us-west-2",
-            });
+                string regions = config.Get("regions")!;
+                // Remove the brackets and any whitespace
+                string trimmedInput = regions.Trim('[', ']', ' ');
+                // Split the string by commas to get individual elements
+                string[] elements = trimmedInput.Split(',');
+                regionList = new List<string>(elements);
+                for (int i = 0; i < regionList.Count; i++)
+                {
+                    regionList[i] = regionList[i].Trim(' ');
+                }
+            }
+            else
+            {
+                regionList.Add("us-west-2");
+            }
+            
+            foreach (var region in regionList)
+            {
+                var provider = new Provider(region, new()
+                {
+                    Region = region,
+                });
 
-            var ami = new Ami("stl-ami");
-            var iam = new Iam("stl-iam");
-            var vpc = new Vpc("stl-vpc");
-            var autoscaling = new Autoscaling("stl-autoscaling", ami.AmiId, iam.StressTestClientReadProfileName
-                , vpc.MainVpcId, vpc.DefaultSecurityGroupId, vpc.MainSubnetIds);
-            var getPublicIp = new GetPublicIp("stl-get-public-ip", ami.AmiId);
+                var ami = new Ami($"stl-ami-{region}", provider, region);
+                var iam = new Iam($"stl-iam-{region}", provider, region);
+                var vpc = new Vpc($"stl-vpc-{region}", provider, region);
+                var autoscaling = new Autoscaling($"stl-autoscaling-{region}", provider, region, ami.AmiId,
+                    iam.StressTestClientReadProfileName,vpc.MainVpcId, vpc.DefaultSecurityGroupId, 
+                    vpc.MainSubnetIds);
+            }
         });
 
         if (Destroy)

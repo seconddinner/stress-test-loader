@@ -12,17 +12,22 @@ class Autoscaling : ComponentResource
     [Output]
     public Output<string> KeyPairName { get; set; }
 
-    public Autoscaling(string name, Input<string> amiId, Input<string> stressTestClientReadProfileName,
-        Input<string> mainVpcId, Input<string> defaultSecurityGroupId,
+    public Aws.AutoScaling.Group group;
+
+    public Autoscaling(string name, Aws.Provider provider, string region, Input<string> amiId, 
+        Input<string> stressTestClientReadProfileName, Input<string> mainVpcId, Input<string> defaultSecurityGroupId,
         InputList<string> mainSubnetIds, ComponentResourceOptions opts = null) : base("stl:aws:Autoscaling", name, null)
     {
         // Set up Config
         var config = new Config();
         
         // Create an AutoScaling Group
-        var sdStresstest = new Aws.Ec2.KeyPair("sdStresstest", new Aws.Ec2.KeyPairArgs
+        var sdStresstest = new Aws.Ec2.KeyPair("sdStresstest-" + region, new Aws.Ec2.KeyPairArgs
         {
             PublicKey = config.Get("public_key") ?? Environment.GetEnvironmentVariable("public_key"),
+        }, new CustomResourceOptions
+        {
+            Provider = provider,
         });
         this.KeyPairName = sdStresstest.KeyName;
 
@@ -36,7 +41,7 @@ class Autoscaling : ComponentResource
         {
             prometheus_node_allowed_cidr,
         };
-        var stresstestSecurityGroup = new Aws.Ec2.SecurityGroup("stresstestSecurityGroup", new Aws.Ec2.SecurityGroupArgs
+        var stresstestSecurityGroup = new Aws.Ec2.SecurityGroup("stresstestSecurityGroup-" + region, new Aws.Ec2.SecurityGroupArgs
         {
             VpcId = mainVpcId,
             Ingress = 
@@ -100,6 +105,9 @@ class Autoscaling : ComponentResource
                     },
                 },
             },
+        }, new CustomResourceOptions
+        {
+            Provider = provider,
         });
         
         // Prepare user data
@@ -111,7 +119,7 @@ class Autoscaling : ComponentResource
         userData = userData.Replace("${telegraf_password}", config.Require("telegraf_password"));
         userData = userData.Replace("${telegraf_url}", config.Require("telegraf_url"));
 
-        var stressTestLoaderLaunchConfiguration = new Aws.Ec2.LaunchConfiguration("stressTestLoaderLaunchConfiguration", new Aws.Ec2.LaunchConfigurationArgs
+        var stressTestLoaderLaunchConfiguration = new Aws.Ec2.LaunchConfiguration("stressTestLoaderLaunchConfiguration-" + region, new Aws.Ec2.LaunchConfigurationArgs
         {
             NamePrefix = $"stress_test_loader-{config.Require("environment")}",
             ImageId = amiId.Apply(x => x!.ToString())!,
@@ -132,12 +140,15 @@ class Autoscaling : ComponentResource
             },
             // DONE: user data
             UserData = userData,
+        }, new CustomResourceOptions
+        {
+            Provider = provider,
         });
 
         // var vpcZoneIdentifiers = new InputList<string>();
         // vpcZoneIdentifiers.AddRange(mainSubnet.Select(__item => __item.Id).ToList());
 
-        var stressTestLoaderGroup = new Aws.AutoScaling.Group("stressTestLoaderGroup", new Aws.AutoScaling.GroupArgs
+        var stressTestLoaderGroup = new Aws.AutoScaling.Group("stressTestLoaderGroup-" + region, new Aws.AutoScaling.GroupArgs
         {
             LaunchConfiguration = stressTestLoaderLaunchConfiguration.Name,
             VpcZoneIdentifiers = mainSubnetIds,
@@ -177,26 +188,36 @@ class Autoscaling : ComponentResource
                 "GroupTerminatingInstances",
                 "GroupTotalInstances"
             },
+        }, new CustomResourceOptions
+        {
+            Provider = provider,
         });
         this.WebAutoScalingGroupName = stressTestLoaderGroup.Name;
-
+        StorePublicIpsToJson(stressTestLoaderGroup, amiId, provider);
+            
         // auto scale up policy
-        var stressTestLoaderUpPolicy = new Aws.AutoScaling.Policy("stressTestLoaderUpPolicy", new Aws.AutoScaling.PolicyArgs
+        var stressTestLoaderUpPolicy = new Aws.AutoScaling.Policy("stressTestLoaderUpPolicy-" + region, new Aws.AutoScaling.PolicyArgs
         {
             ScalingAdjustment = int.Parse(config.Require("up_scaling_adjustment")),
             AdjustmentType = "ChangeInCapacity",
             Cooldown = 300,
             AutoscalingGroupName = stressTestLoaderGroup.Name,
+        }, new CustomResourceOptions
+        {
+            Provider = provider,
         });
         // auto scale down policy
-        var stressTestLoaderDownPolicy = new Aws.AutoScaling.Policy("stressTestLoaderDownPolicy", new Aws.AutoScaling.PolicyArgs
+        var stressTestLoaderDownPolicy = new Aws.AutoScaling.Policy("stressTestLoaderDownPolicy-" + region, new Aws.AutoScaling.PolicyArgs
         {
             ScalingAdjustment = int.Parse(config.Require("down_scaling_adjustment")),
             AdjustmentType = "ChangeInCapacity",
             Cooldown = 300,
             AutoscalingGroupName = stressTestLoaderGroup.Name,
+        }, new CustomResourceOptions
+        {
+            Provider = provider,
         });
-        var stressTestLoaderUpMetricAlarm = new Aws.CloudWatch.MetricAlarm("stressTestLoaderUpMetricAlarm", new Aws.CloudWatch.MetricAlarmArgs
+        var stressTestLoaderUpMetricAlarm = new Aws.CloudWatch.MetricAlarm("stressTestLoaderUpMetricAlarm-" + region, new Aws.CloudWatch.MetricAlarmArgs
         {
             ComparisonOperator = "GreaterThanOrEqualToThreshold",
             EvaluationPeriods = 2,
@@ -214,8 +235,11 @@ class Autoscaling : ComponentResource
             {
                 stressTestLoaderUpPolicy.Arn,
             },
+        }, new CustomResourceOptions
+        {
+            Provider = provider,
         });
-        var stressTestLoaderDownMetricAlarm = new Aws.CloudWatch.MetricAlarm("stressTestLoaderDownMetricAlarm", new Aws.CloudWatch.MetricAlarmArgs
+        var stressTestLoaderDownMetricAlarm = new Aws.CloudWatch.MetricAlarm("stressTestLoaderDownMetricAlarm-" + region, new Aws.CloudWatch.MetricAlarmArgs
         {
             ComparisonOperator = "LessThanOrEqualToThreshold",
             EvaluationPeriods = 120,
@@ -233,6 +257,63 @@ class Autoscaling : ComponentResource
             {
                 stressTestLoaderDownPolicy.Arn,
             },
+        }, new CustomResourceOptions
+        {
+            Provider = provider,
+        });
+    }
+
+    public void StorePublicIpsToJson(Aws.AutoScaling.Group stressTestLoaderGroup, Input<string> amiId, Aws.Provider provider)
+    {
+        stressTestLoaderGroup.Name.Apply(n =>
+        {
+            InputList<string> ec2PublicIps = new InputList<string>();
+            var ec2Instances = Aws.Ec2.GetInstances.Invoke(new()
+            {
+                Filters = new[]
+                {
+                    new Aws.Ec2.Inputs.GetInstancesFilterInputArgs
+                    {
+                        Name = "image-id",
+                        Values = amiId
+                    }
+                }
+            }, new InvokeOptions()
+            {
+                Provider = provider
+            });
+            ec2PublicIps.AddRange(ec2Instances.Apply(instance => instance.PublicIps));
+
+            var filePath = "/tmp/IP.json";
+            var instancesList = new List<List<Dictionary<string, string>>>();
+            if (File.Exists(filePath))
+            {
+                // If the file exists, read and parse it
+                string existingJson = File.ReadAllText(filePath);
+                instancesList = JsonSerializer.Deserialize<List<List<Dictionary<string, string>>>>(existingJson);
+            }
+
+            // Iterate over the instances and add their public IP addresses to the list
+            ec2PublicIps.Apply(ips =>
+            {
+                foreach (var publicIp in ips)
+                {
+                    // Create a dictionary for each instance with the "public_ip" property
+                    var instanceDict = new Dictionary<string, string>
+                    {
+                        { "public_ip", publicIp }
+                    };
+                    // Add the instance dictionary to the instances list
+                    instancesList.Add(new List<Dictionary<string, string>> { instanceDict });
+                }
+                // Convert the instances to JSON
+                var json = JsonSerializer.Serialize(instancesList);
+                // Save the JSON to a file
+                File.WriteAllText(filePath, json);
+                Console.WriteLine($"IP addresses of EC2 instances saved to '{filePath}'.");
+                return ips;
+            });
+            return n;
         });
     }
 

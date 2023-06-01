@@ -7,12 +7,12 @@ class Iam : ComponentResource
 {
     [Output]
     public Output<string> StressTestClientReadProfileName { get; set; }
-    public Iam(string name, ComponentResourceOptions opts = null) : base("stl:aws:Iam", name, opts)
+    public Iam(string name, Aws.Provider provider, string region, ComponentResourceOptions opts = null) : base("stl:aws:Iam", name, opts)
     {
-        // Create an IAM
+      // Create an IAM
         var currentCallerIdentity = Output.Create(Aws.GetCallerIdentity.InvokeAsync());
         var currentRegion = Output.Create(Aws.GetRegion.InvokeAsync());
-        var stressTestClientReadRole = new Aws.Iam.Role("stressTestClientReadRole", new Aws.Iam.RoleArgs
+        var stressTestClientReadRole = new Aws.Iam.Role("stressTestClientReadRole-" + region, new Aws.Iam.RoleArgs
         {
             AssumeRolePolicy = @"{
   ""Version"": ""2012-10-17"",
@@ -32,13 +32,19 @@ class Iam : ComponentResource
             {
                 { "tag-key", "stress_test" },
             },
+        }, new CustomResourceOptions
+        {
+          Provider = provider,
         });
-        var stressTestClientReadProfile = new Aws.Iam.InstanceProfile("stressTestClientReadProfile", new Aws.Iam.InstanceProfileArgs
+        var stressTestClientReadProfile = new Aws.Iam.InstanceProfile("stressTestClientReadProfile-" + region, new Aws.Iam.InstanceProfileArgs
         {
             Role = stressTestClientReadRole.Name,
+        }, new CustomResourceOptions
+        {
+          Provider = provider,
         });
         this.StressTestClientReadProfileName = stressTestClientReadProfile.Name;
-        var stressTestClientRead = new Aws.Iam.RolePolicy("stressTestClientRead", new Aws.Iam.RolePolicyArgs
+        var stressTestClientRead = new Aws.Iam.RolePolicy("stressTestClientRead-" + region, new Aws.Iam.RolePolicyArgs
         {
             Role = stressTestClientReadRole.Id,
             Policy = @"{
@@ -61,6 +67,9 @@ class Iam : ComponentResource
   ]
 }
 ",
+        }, new CustomResourceOptions
+        {
+          Provider = provider,
         });
 
     }

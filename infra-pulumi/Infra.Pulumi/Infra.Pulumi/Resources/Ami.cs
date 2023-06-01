@@ -9,7 +9,7 @@ class Ami : ComponentResource
     [Output]
     public Output<string> AmiId { get; set; }
     
-    public Ami(string name, ComponentResourceOptions opts = null) : base("stl:aws:Ami", name, opts)
+    public Ami(string name, Aws.Provider provider, string region, ComponentResourceOptions opts = null) : base("stl:aws:Ami", name, opts)
     {
         // Set up Config
         var config = new Config();
@@ -28,11 +28,14 @@ class Ami : ComponentResource
             MostRecent = true
         })).Apply(result => result.Id);
 
-        var stl = new Aws.Ec2.AmiCopy("stl", new Aws.Ec2.AmiCopyArgs
+        var stl = new Aws.Ec2.AmiCopy("stl-" + region, new Aws.Ec2.AmiCopyArgs
         {
             Name = config.Require("name"),
             SourceAmiId = amiId,
             SourceAmiRegion = config.Require("source_ami_region")
+        }, new CustomResourceOptions
+        {
+            Provider = provider,
         });
 
         this.AmiId = stl.Id;
