@@ -194,7 +194,7 @@ jobs:
         done < /tmp/IP.txt
 
     - name: pulumi destroy stress test infra
-      #if: steps.filter.outputs.infra-pulumi  == 'true'
+      if: always()
       run: |
         cd $GITHUB_WORKSPACE/infra-pulumi/Infra.Pulumi/Infra.Pulumi
         pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
