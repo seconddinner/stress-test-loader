@@ -130,6 +130,19 @@ jobs:
 
     - name: run stress test
       run: |
+        cd $GITHUB_WORKSPACE/stress-test-loader
+        rm -r client/cert
+        mkdir client/cert
+        cat ${{ secrets.CA_KEY }} > ca_key.pem
+        openssl req -new -x509 -key ca_key.pem -out ca_crt.pem -days 365 -subj "/O=seconddinner"
+        cp ca-key.pem client/cert/ca-key.pem
+        cp ca-cert.pem client/cert/ca-cert.pem
+        cd $GITHUB_WORKSPACE/stress-test-loader/client/cert
+        echo "Generating client's private key and CSR"
+        openssl req -newkey rsa:4096 -nodes -keyout client-key.pem -out client-req.pem -subj "/O=seconddinner"
+        echo "Signing client's CSR"
+        openssl x509 -req -in client-req.pem -days 60 -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial -out client-cert.pem
+        openssl x509 -in client-cert.pem -noout -text
         cd $GITHUB_WORKSPACE/stress-test-loader/client
         export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
         json=$(cat <<EOF
