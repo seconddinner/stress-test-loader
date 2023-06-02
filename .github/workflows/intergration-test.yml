@@ -131,7 +131,7 @@ jobs:
     - name: run stress test
       run: |
         cd $GITHUB_WORKSPACE/stress-test-loader
-        rm -r client/cert
+        rm -rf client/cert
         mkdir client/cert
         cat ${{ secrets.CA_KEY }} > ca_key.pem
         openssl req -new -x509 -key ca_key.pem -out ca_crt.pem -days 365 -subj "/O=seconddinner"
