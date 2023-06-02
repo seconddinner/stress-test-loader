@@ -134,7 +134,7 @@ jobs:
         rm -rf client/cert
         mkdir client/cert
         echo "${{ secrets.CA_KEY }}" > ca-key.pem
-        openssl req -new -x509 -key ca-key.pem -out ca-crt.pem -days 365 -subj "/O=seconddinner"
+        openssl req -new -x509 -key ca-key.pem -out ca-cert.pem -days 365 -subj "/O=seconddinner"
         cp ca-key.pem client/cert/ca-key.pem
         cp ca-cert.pem client/cert/ca-cert.pem
         cd $GITHUB_WORKSPACE/stress-test-loader/client/cert
