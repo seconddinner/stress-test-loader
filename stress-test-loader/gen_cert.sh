@@ -6,7 +6,7 @@ cd cert
 
 # 1. Generate web server's private key and certificate signing request (CSR)
 echo "Generating server's private key and CSR"
-openssl req -newkey rsa:4096 -nodes -keyout server-key.pem -out server-req.pem -subj "/O=seconddinner/CN=*.seconddinner.com/emailAddress=stress-test-loader@seconddiner.com"
+openssl req -newkey rsa:4096 -nodes -keyout server-key.pem -out server-req.pem -subj "/O=seconddinner"
 
 # 2. Use CA's private key to sign web server's CSR
 echo "Signing server's CSR"
@@ -16,7 +16,7 @@ openssl x509 -in server-cert.pem -noout -text
 cd ../client/cert
 # 3. Generate client's private key and certificate signing request (CSR)
 echo "Generating client's private key and CSR"
-openssl req -newkey rsa:4096 -nodes -keyout client-key.pem -out client-req.pem -subj "/O=seconddinner/CN=*.seconddinner.com/emailAddress=stress-test-loader-client@seconddiner.com"
+openssl req -newkey rsa:4096 -nodes -keyout client-key.pem -out client-req.pem -subj "/O=seconddinner"
 
 # 4. Use CA's private key to sign client's CSR
 echo "Signing client's CSR"
