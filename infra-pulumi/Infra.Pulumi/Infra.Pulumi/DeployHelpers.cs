@@ -85,15 +85,19 @@ public static class DeployHelpers
         };
         string localPublicIp = Environment.GetEnvironmentVariable("stress_test_loader_allowed_cidr");
         string publicKey = Environment.GetEnvironmentVariable("public_key");
+        string s3ClientBucketName = Environment.GetEnvironmentVariable("s3_client_bucket_name");
+        string s3LogBucketName = Environment.GetEnvironmentVariable("s3_log_bucket_name");
         string environment = Environment.GetEnvironmentVariable("environment") ?? "stresstest-git-action";
         string desiredCapacity = Environment.GetEnvironmentVariable("desired_capacity") ?? "2";
         string regions = Environment.GetEnvironmentVariable("regions") ?? "us-west-2";
-        
+
         var config = new Dictionary<string, ConfigValue>
         {
             { "aws:region", new ConfigValue("us-west-2") },
             { "aws-native:region", new ConfigValue("us-west-2") },
             { "stress-test-loader-pulumi:regions", new ConfigValue($"[{regions}]") },
+            { "stress-test-loader-pulumi:s3_client_bucket_name", new ConfigValue(s3ClientBucketName) },
+            { "stress-test-loader-pulumi:s3_log_bucket_name", new ConfigValue(s3LogBucketName) },
             { "stress-test-loader-pulumi:az_count", new ConfigValue("2") },
             { "stress-test-loader-pulumi:cidr_block", new ConfigValue("10.10.0.0/16") },
             { "stress-test-loader-pulumi:up_scaling_adjustment", new ConfigValue("-1") },
