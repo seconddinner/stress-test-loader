@@ -58,6 +58,8 @@ terraform.plan
 providers.tf
 provider.tf
 
+stress-test-loader/cert/*
+stress-test-loader/client/cert/*
 stress-test-loader/client/client
 stress-test-loader/client/testconfig/*
 stress-test-loader/client/ip.json
