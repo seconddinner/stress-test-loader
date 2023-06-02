@@ -13,6 +13,8 @@ public static class DeployHelpers
             await stack.UpAsync(new UpOptions
             {
                 OnStandardOutput = Console.WriteLine,
+                OnStandardError = Console.Error.WriteLine,
+                LogToStdErr = true,
                 Parallel = int.MaxValue,
                 Color = "always",
             }, cancellationToken);
@@ -34,6 +36,8 @@ public static class DeployHelpers
             await stack.PreviewAsync(new()
             {
                 OnStandardOutput = Console.WriteLine,
+                OnStandardError = Console.Error.WriteLine,
+                LogToStdErr = true,
                 Parallel = int.MaxValue,
                 Color = "always",
                 Diff = true,
@@ -56,6 +60,8 @@ public static class DeployHelpers
             await stack.DestroyAsync(new DestroyOptions
             {
                 OnStandardOutput = Console.WriteLine,
+                OnStandardError = Console.Error.WriteLine,
+                LogToStdErr = true,
                 Parallel = int.MaxValue,
                 Color = "always",
             }, cancellationToken);
