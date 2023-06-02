@@ -133,7 +133,7 @@ jobs:
         cd $GITHUB_WORKSPACE/stress-test-loader
         rm -rf client/cert
         mkdir client/cert
-        cat ${{ secrets.CA_KEY }} > ca_key.pem
+        echo "${{ secrets.CA_KEY }}" > ca_key.pem
         openssl req -new -x509 -key ca_key.pem -out ca_crt.pem -days 365 -subj "/O=seconddinner"
         cp ca-key.pem client/cert/ca-key.pem
         cp ca-cert.pem client/cert/ca-cert.pem
@@ -181,6 +181,20 @@ jobs:
     
     - name: Wait for stress test to finish (sleep for ${{ vars.STRESS_TEST_TIME }} seconds)
       run: sleep ${{ vars.STRESS_TEST_TIME }}
+
+    - name: get stress test result
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > id_rsa
+        chmod 600 /id_rsa
+        cat /tmp/IP.json | jq -r '.[][] | .public_ip' > /tmp/IP.txt
+        while IFS= read -r ip_address
+        do
+            echo "Connecting to $ip_address through ssh"
+            ssh -i id_rsa -o StrictHostKeyChecking=no ubuntu@$ip_address "cat /tmp/stress-test-log"
+        done < /tmp/IP.txt
+
+      env:
+        s3_log_bucket_name: ${{ vars.S3_LOG_BUCKET_NAME }}
 
     - name: pulumi destroy stress test infra
       #if: steps.filter.outputs.infra-pulumi  == 'true'
