@@ -185,7 +185,7 @@ jobs:
     - name: get stress test result
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > id_rsa
-        chmod 600 /id_rsa
+        chmod 600 id_rsa
         cat /tmp/IP.json | jq -r '.[][] | .public_ip' > /tmp/IP.txt
         while IFS= read -r ip_address
         do
