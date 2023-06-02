@@ -39,16 +39,16 @@ EOF
 
 chmod 755 /usr/local/stress_test_loader-node-selfcheck/reportbadserver.sh
 
-cat <<EOF > /root/register.sh
-#!/usr/bin/env bash
-
-PublicIP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
-PrivateIP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
-Zone=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
-curl -X POST "https://register.zone2.seconddinnertech.net/v1/server/1xCrmez3Xy34qKg4h99RUgqVbQR6sUPVmYSTc0TE1rJYLmgKKpwnOshC1Ejvc2YM/" -H  "accept: application/json" -H  "content-type: application/json" -d "{  \"Cloud\": \"aws\",   \"PrivateIP\": \"\$PrivateIP\",  \"PublicIP\": \"\$PublicIP\",  \"Type\": \"${environment}\",  \"Zone\": \"\$Zone\"}"
-EOF
-
-source /root/register.sh
+#cat <<EOF > /root/register.sh
+##!/usr/bin/env bash
+#
+#PublicIP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+#PrivateIP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+#Zone=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+#curl -X POST "https://register.zone2.seconddinnertech.net/v1/server/1xCrmez3Xy34qKg4h99RUgqVbQR6sUPVmYSTc0TE1rJYLmgKKpwnOshC1Ejvc2YM/" -H  "accept: application/json" -H  "content-type: application/json" -d "{  \"Cloud\": \"aws\",   \"PrivateIP\": \"\$PrivateIP\",  \"PublicIP\": \"\$PublicIP\",  \"Type\": \"${environment}\",  \"Zone\": \"\$Zone\"}"
+#EOF
+#
+#source /root/register.sh
 
 cat <<EOF > /etc/rsyslog.d/99-stresstest.conf
 if \$programname == 'stress-test-loader-linux' then @127.0.0.1:10514
