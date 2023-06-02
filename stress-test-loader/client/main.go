@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,6 +13,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 type PublicIP struct {
@@ -36,6 +39,34 @@ func readStressTestConfig(f string) (pbRequest pb.TestRequest) {
 	}
 	log.Debug(string(jsonBytes))
 	return
+}
+
+func loadTLSCredentials() (credentials.TransportCredentials, error) {
+	// Load certificate of the CA who signed server's certificate
+	pemServerCA, err := ioutil.ReadFile("cert/ca-cert.pem")
+	if err != nil {
+		return nil, err
+	}
+
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(pemServerCA) {
+		return nil, fmt.Errorf("failed to add server CA's certificate")
+	}
+
+	// Load client's certificate and private key
+	clientCert, err := tls.LoadX509KeyPair("cert/client-cert.pem", "cert/client-key.pem")
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the credentials and return it
+	config := &tls.Config{
+		Certificates:       []tls.Certificate{clientCert},
+		RootCAs:            certPool,
+		InsecureSkipVerify: true,
+	}
+
+	return credentials.NewTLS(config), nil
 }
 
 func main() {
@@ -64,6 +95,11 @@ func main() {
 	}
 	fmt.Println(ipList)
 
+	tlsCredentials, err := loadTLSCredentials()
+	if err != nil {
+		log.Fatal("cannot load TLS credentials: ", err)
+	}
+
 	if os.Args[1] != "-s" {
 		loadTestConfig = os.Args[1]
 		pbRequest = readStressTestConfig(loadTestConfig)
@@ -73,7 +109,7 @@ func main() {
 			for _, s2 := range s {
 				fmt.Println(s2.PublicIP)
 				ctx, cancel := context.WithTimeout(context.Background(), 2000*time.Second)
-				conn, err := grpc.DialContext(ctx, s2.PublicIP+":"+port, grpc.WithInsecure())
+				conn, err := grpc.DialContext(ctx, s2.PublicIP+":"+port, grpc.WithTransportCredentials(tlsCredentials))
 				if err != nil {
 					log.Println("Dial failed!")
 					return
@@ -96,7 +132,7 @@ func main() {
 			for _, s2 := range s {
 				fmt.Println(s2.PublicIP)
 				ctx, cancel := context.WithTimeout(context.Background(), 2000*time.Second)
-				conn, err := grpc.DialContext(ctx, s2.PublicIP+":"+port, grpc.WithInsecure())
+				conn, err := grpc.DialContext(ctx, s2.PublicIP+":"+port, grpc.WithTransportCredentials(tlsCredentials))
 				if err != nil {
 					log.Println("Dial failed!")
 					return
