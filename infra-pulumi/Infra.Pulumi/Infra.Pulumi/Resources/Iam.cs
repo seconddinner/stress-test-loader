@@ -62,14 +62,14 @@ class Iam : ComponentResource
         ""s3:GetObject""
       ],
       ""Effect"": ""Allow"",
-      ""Resource"": ""arn:aws:s3:::" + s3_client_bucket_name + @"/""
+      ""Resource"": ""arn:aws:s3:::" + s3_client_bucket_name + @"/*""
     },
     {
       ""Action"": [
         ""s3:PutObject""
       ],
       ""Effect"": ""Allow"",
-      ""Resource"": ""arn:aws:s3:::" + s3_log_bucket_name + @"/""
+      ""Resource"": ""arn:aws:s3:::" + s3_log_bucket_name + @"/*""
     }
   ]
 }
