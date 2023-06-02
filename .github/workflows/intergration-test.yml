@@ -193,9 +193,6 @@ jobs:
             ssh -i id_rsa -o StrictHostKeyChecking=no ubuntu@$ip_address "cat /tmp/stress-test-log"
         done < /tmp/IP.txt
 
-      env:
-        s3_log_bucket_name: ${{ vars.S3_LOG_BUCKET_NAME }}
-
     - name: pulumi destroy stress test infra
       #if: steps.filter.outputs.infra-pulumi  == 'true'
       run: |
