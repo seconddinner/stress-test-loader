@@ -9,7 +9,12 @@ class Iam : ComponentResource
     public Output<string> StressTestClientReadProfileName { get; set; }
     public Iam(string name, Aws.Provider provider, string region, ComponentResourceOptions opts = null) : base("stl:aws:Iam", name, opts)
     {
-      // Create an IAM
+        // Set up Config
+        var config = new Config();
+        var s3_client_bucket_name = config.Require("s3_client_bucket_name");
+        var s3_log_bucket_name = config.Require("s3_log_bucket_name");
+        
+        // Create an IAM
         var currentCallerIdentity = Output.Create(Aws.GetCallerIdentity.InvokeAsync());
         var currentRegion = Output.Create(Aws.GetRegion.InvokeAsync());
         var stressTestClientReadRole = new Aws.Iam.Role("stressTestClientReadRole-" + region, new Aws.Iam.RoleArgs
@@ -57,14 +62,14 @@ class Iam : ComponentResource
         ""s3:GetObject""
       ],
       ""Effect"": ""Allow"",
-      ""Resource"": ""arn:aws:s3:::stresstest-client/*""
+      ""Resource"": ""arn:aws:s3:::" + s3_client_bucket_name + @"/""
     },
     {
       ""Action"": [
         ""s3:PutObject""
       ],
       ""Effect"": ""Allow"",
-      ""Resource"": ""arn:aws:s3:::stresstest-client-log/*""
+      ""Resource"": ""arn:aws:s3:::" + s3_log_bucket_name + @"/""
     }
   ]
 }
