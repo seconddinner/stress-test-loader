@@ -24,7 +24,7 @@ jobs:
   stresstest-build-test:
     runs-on: ubuntu-latest
     environment: TEST
-    #container: seconddinner/build:0.0.5
+    container: seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -71,7 +71,7 @@ jobs:
   backend-test:
     runs-on: ubuntu-latest
     environment: TEST
-    #container: seconddinner/build:0.0.5
+    container: seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -198,11 +198,10 @@ jobs:
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > id_rsa
         chmod 600 id_rsa
         cat /tmp/IP.json | jq -r '.[][] | .public_ip' > /tmp/IP.txt
-        while IFS= read -r ip_address
-        do
-            echo "Connecting to $ip_address through ssh"
-            ssh -i id_rsa -o StrictHostKeyChecking=no ubuntu@$ip_address "cat /tmp/stress-test-log"
-        done < /tmp/IP.txt
+        cat /tmp/IP.txt | while read -r ip; do
+          echo "Connecting to $ip_address through ssh"
+          ssh -i id_rsa -o StrictHostKeyChecking=no ubuntu@$ip_address "cat /tmp/stress-test-log"
+        done
 
     - name: pulumi destroy stress test infra
       if: always()
