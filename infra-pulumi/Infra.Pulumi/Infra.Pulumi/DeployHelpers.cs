@@ -103,7 +103,7 @@ public static class DeployHelpers
             { "stress-test-loader-pulumi:desired_capacity", new ConfigValue(desiredCapacity) },
             { "stress-test-loader-pulumi:max_size", new ConfigValue("10") },
             { "stress-test-loader-pulumi:min_size", new ConfigValue("1") },
-            { "stress-test-loader-pulumi:name", new ConfigValue("stl-stress_test_loader-cluster") },
+            { "stress-test-loader-pulumi:ami_name", new ConfigValue("stl-stress_test_loader-cluster") },
             { "stress-test-loader-pulumi:prometheus_node_allowed_cidr", new ConfigValue("0.0.0.0/0") },
             { "stress-test-loader-pulumi:public_ip_on_launch", new ConfigValue("true") },
             // NOTE: make public key, ami id, and public ip env var.
