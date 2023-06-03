@@ -40,6 +40,10 @@ build {
     source      = "cicd/config"
     destination = "/tmp/config"
   }
+  provisioner "file" {
+    source      = "cert"
+    destination = "/tmp/cert"
+  }
   provisioner "shell" {
     inline = [
       "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
@@ -51,6 +55,7 @@ build {
       "sudo mkdir -p /usr/local/stress-test-loader",
       "sudo gzip -d -f /tmp/stress-test-loader-linux.gz",
       "sudo mv /tmp/stress-test-loader-linux /usr/local/stress-test-loader/",
+      "sudo mv /tmp/cert /usr/local/stress-test-loader/",
       "sudo mv /tmp/config/systemd/stress-test-loader.service /etc/systemd/system",
       "sudo mv /tmp/config/config.json /usr/local/stress-test-loader",
       "sudo mv /tmp/config/limits.conf /etc/security/limits.conf",
