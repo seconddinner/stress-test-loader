@@ -86,8 +86,7 @@ jobs:
             - 'games/**'
     
     - name: AWS Setup
-      if: |
-        steps.filter.outputs.infra-pulumi  == 'true' || steps.filter.outputs.games  == 'true'
+      #if: steps.filter.outputs.infra-pulumi  == 'true' || steps.filter.outputs.games  == 'true'
       uses: aws-actions/configure-aws-credentials@v1-node16
       with:
         aws-region: us-west-2
@@ -200,7 +199,7 @@ jobs:
         cat /tmp/IP.json | jq -r '.[][] | .public_ip' > /tmp/IP.txt
         cat /tmp/IP.txt | while read -r ip; do
           echo "Connecting to $ip through ssh"
-          ssh -i id_rsa -o StrictHostKeyChecking=no ubuntu@$ip "cat /tmp/stress-test-log"
+          ssh -n -i id_rsa -o StrictHostKeyChecking=no ubuntu@$ip "cat /tmp/stress-test-log"
         done
 
     - name: pulumi destroy stress test infra
