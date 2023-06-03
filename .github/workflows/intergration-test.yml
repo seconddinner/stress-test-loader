@@ -24,7 +24,7 @@ jobs:
   stresstest-build-test:
     runs-on: ubuntu-latest
     environment: TEST
-    container: seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
+    #container: seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -71,7 +71,7 @@ jobs:
   backend-test:
     runs-on: ubuntu-latest
     environment: TEST
-    container: seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
+    #container: seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
     steps:
     - uses: actions/checkout@v3
       with:
