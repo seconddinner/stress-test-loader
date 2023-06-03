@@ -30,7 +30,7 @@ class Ami : ComponentResource
 
         var stl = new Aws.Ec2.AmiCopy("stl-" + region, new Aws.Ec2.AmiCopyArgs
         {
-            Name = config.Require("name"),
+            Name = config.Require("ami_name"),
             SourceAmiId = amiId,
             SourceAmiRegion = config.Require("source_ami_region")
         }, new CustomResourceOptions
