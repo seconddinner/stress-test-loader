@@ -10,6 +10,7 @@ service StressTestLoader {
   // Sends a list of stresstest public ip to varify
   rpc StartStressTest(TestRequest) returns (TestReply) {}
   rpc StopStressTest(TestRequest) returns (TestReply) {}
+  rpc GetStressTestStatus(TestRequest) returns (TestReply) {}
 }
 
 

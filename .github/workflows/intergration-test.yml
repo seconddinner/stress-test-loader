@@ -189,8 +189,31 @@ jobs:
         env3_name: ${{ vars.ENV3_NAME }}
         env3_value: ${{ vars.ENV3_VALUE }}
     
-    - name: Wait for stress test to finish (sleep for ${{ vars.STRESS_TEST_TIME }} seconds)
-      run: sleep ${{ vars.STRESS_TEST_TIME }}
+    - name: check stress test status
+      run: |
+        maxIterations=10
+        iterations=0
+        interval=20
+        searchString="running stress tests count: 0"
+        
+        while [ $iterations -lt $maxIterations ]; do
+          output=$(go run main.go -p /tmp/IP.json)
+          echo "$output" | tail -n 1
+          if echo "$output" | grep -q "$searchString"; then
+            echo "Stress tests finished"
+            break
+          else
+            echo "Stress tests running. Sleeping for $interval seconds ..."
+            sleep $interval
+            iterations=$((iterations + 1))
+          fi
+        done
+
+        if [ $iterations -eq $maxIterations ]; then
+          echo "Maximum iterations reached ($maxIterations) but stress tests still running"
+          echo "Stopping the stress tests"
+          go run main.go -s /tmp/IP.json
+        fi
 
     - name: get stress test result
       run: |

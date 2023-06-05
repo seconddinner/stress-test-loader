@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	pb "stress-test-loader/proto"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -100,7 +101,8 @@ func main() {
 		log.Fatal("cannot load TLS credentials: ", err)
 	}
 
-	if os.Args[1] != "-s" {
+	if os.Args[1] != "-s" && os.Args[1] != "-p" {
+		// Start the stress test
 		loadTestConfig = os.Args[1]
 		pbRequest = readStressTestConfig(loadTestConfig)
 		pbRequest.TimeStamp = time.Now().UTC().Format(time.RFC3339Nano)
@@ -128,6 +130,8 @@ func main() {
 			}
 		}
 	} else {
+		// Stop the stress test or poll the status of the stress test
+		runningCount := 0
 		for _, s := range ipList {
 			for _, s2 := range s {
 				fmt.Println(s2.PublicIP)
@@ -142,15 +146,31 @@ func main() {
 
 				defer cancel()
 
-				r, err := c.StopStressTest(ctx, &pbRequest)
-				if err != nil {
-					log.Error("could not greet: %v", err)
+				if os.Args[1] == "-s" {
+					r, err := c.StopStressTest(ctx, &pbRequest)
+					if err != nil {
+						log.Error("could not greet: %v", err)
+					}
+					log.Printf("%s", r.GetStatus())
+				} else {
+					r, err := c.GetStressTestStatus(ctx, &pbRequest)
+					if err != nil {
+						log.Error("could not greet: %v", err)
+					}
+					log.Printf("%s", r.GetStatus())
+					if strings.Contains(r.GetStatus(), "running") {
+						runningCount += 1
+					}
 				}
-				log.Printf("%s", r.GetStatus())
 
 			}
+			if os.Args[1] == "-s" {
+				fmt.Println("stop stress test")
+			} else {
+				fmt.Println("get stress test status")
+				fmt.Println("running stress tests count: ", runningCount)
+			}
 
-			fmt.Println("stop stress test")
 		}
 	}
 }
