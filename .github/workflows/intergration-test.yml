@@ -24,7 +24,11 @@ jobs:
   stresstest-build-test:
     runs-on: ubuntu-latest
     environment: TEST
-    container: ghcr.io/seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
+    container: 
+      image: ghcr.io/seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -71,7 +75,11 @@ jobs:
   backend-test:
     runs-on: ubuntu-latest
     environment: TEST
-    container: ghcr.io/seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
+    container:
+      image: ghcr.io/seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
     steps:
     - uses: actions/checkout@v3
       with:
