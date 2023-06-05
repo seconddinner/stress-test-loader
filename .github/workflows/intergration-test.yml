@@ -26,12 +26,13 @@ jobs:
     runs-on: ubuntu-latest
     environment: TEST
     container: 
-      image: ghcr.io/seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
+      image: ghcr.io/seconddinner/build:0.0.5 #${{ vars.BUILD_CONTAINER_VERSION }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}
     env:
       SOURCE: ${{ github.ref_name }}
+
     steps:
     - uses: actions/checkout@v3
       with:
