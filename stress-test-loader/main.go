@@ -203,6 +203,17 @@ func (s *server) StartStressTest(ctx context.Context, in *pb.TestRequest) (*pb.T
 	return &pb.TestReply{Status: in.S3Key + msg}, nil
 }
 
+// get stress test status
+func (s *server) GetStressTestStatus(ctx context.Context, in *pb.TestRequest) (*pb.TestReply, error) {
+	var msg string
+	if T.running == true {
+		msg = " stress-test running"
+	} else {
+		msg = " stress-test completed"
+	}
+	return &pb.TestReply{Status: in.S3Key + msg}, nil
+}
+
 // stop stress test
 func (s *server) StopStressTest(ctx context.Context, in *pb.TestRequest) (*pb.TestReply, error) {
 	err, msg := T.stopStressTest(in)
