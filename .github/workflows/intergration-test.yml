@@ -29,6 +29,13 @@ jobs:
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}
+    env:
+      SOURCE: ${{ github.ref_name }}
+    # These permissions are needed to interact with GitHub's OIDC Token endpoint.
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
     steps:
     - uses: actions/checkout@v3
       with:
@@ -80,6 +87,13 @@ jobs:
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}
+    env:
+      SOURCE: ${{ github.ref_name }}
+    # These permissions are needed to interact with GitHub's OIDC Token endpoint.
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
     steps:
     - uses: actions/checkout@v3
       with:
