@@ -27,9 +27,6 @@ jobs:
     environment: TEST
     container: 
       image: seconddinner/build:0.0.5 #${{ vars.BUILD_CONTAINER_VERSION }}
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.github_token }}
     env:
       SOURCE: ${{ github.ref_name }}
 
