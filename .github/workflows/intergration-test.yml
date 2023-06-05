@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: TEST
     container: 
-      image: ghcr.io/seconddinner/build:0.0.5 #${{ vars.BUILD_CONTAINER_VERSION }}
+      image: seconddinner/build:0.0.5 #${{ vars.BUILD_CONTAINER_VERSION }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}
