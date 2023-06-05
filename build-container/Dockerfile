@@ -44,6 +44,3 @@ RUN apt-get update && apt-get install -y dotnet-sdk-6.0
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 RUN unzip awscliv2.zip
 RUN ./aws/install
-
-RUN git config --global --add safe.directory /__w/stress-test-loader
-RUN git config --global --add safe.directory /__w/stress-test-loader/stress-test-loader

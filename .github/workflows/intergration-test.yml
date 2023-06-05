@@ -34,9 +34,12 @@ jobs:
       SOURCE: ${{ github.ref_name }}
 
     steps:
+      # workaround for the "fatal: detected dubious ownership in repository" error
+      # this should be a github's problem
+      # https://github.com/actions/runner-images/issues/6775
     - name: Change Owner of Container Working Directory
       run: chown root:root .
-      
+
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
@@ -90,6 +93,9 @@ jobs:
     env:
       SOURCE: ${{ github.ref_name }}
     steps:
+    - name: Change Owner of Container Working Directory
+      run: chown root:root .
+      
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
