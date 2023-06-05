@@ -95,7 +95,7 @@ jobs:
     steps:
     - name: Change Owner of Container Working Directory
       run: chown root:root .
-      
+
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
@@ -152,9 +152,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/simple-stress-test-client/StressTest
         dotnet publish -r linux-arm64 --self-contained true -c Release
-        cd bin/Release
-        cd "$(ls -d */ | head -n 1)"
-        cd linux-arm64/publish
+        cd bin/Release/net6.0/linux-arm64/publish
         export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
         tar czf /tmp/s3_key.tgz ./
         aws s3 cp /tmp/s3_key.tgz s3://$s3_client_bucket_name/$s3_key
