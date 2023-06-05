@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - wwu/test-github-actions
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 jobs:

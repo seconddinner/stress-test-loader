@@ -191,6 +191,7 @@ jobs:
     
     - name: check stress test status
       run: |
+        cd $GITHUB_WORKSPACE/stress-test-loader/client
         maxIterations=10
         iterations=0
         interval=20
