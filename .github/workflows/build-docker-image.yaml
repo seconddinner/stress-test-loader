@@ -16,7 +16,6 @@ jobs:
       contents: read
     env:
       IMAGE_NAME: seconddinner/build
-      REGISTRY: ghcr.io
     steps:
       - name: Checkout
         uses: actions/checkout@v3
