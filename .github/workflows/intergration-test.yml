@@ -153,7 +153,7 @@ jobs:
         cd $GITHUB_WORKSPACE/simple-stress-test-client/StressTest
         dotnet publish -r linux-arm64 --self-contained true -c Release
         cd bin/Release/net6.0/linux-arm64/publish
-        export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
+        export s3_key=simple-stress-test-client.tgz
         tar czf /tmp/s3_key.tgz ./
         aws s3 cp /tmp/s3_key.tgz s3://$s3_client_bucket_name/$s3_key
       env:
@@ -175,7 +175,7 @@ jobs:
         openssl x509 -req -in client-req.pem -days 60 -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial -out client-cert.pem
         openssl x509 -in client-cert.pem -noout -text
         cd $GITHUB_WORKSPACE/stress-test-loader/client
-        export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
+        export s3_key=simple-stress-test-client.tgz
         json=$(cat <<EOF
         {
             "s3": "$s3_client_bucket_name",
