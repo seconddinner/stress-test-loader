@@ -10,6 +10,7 @@ on:
   push:
     branches:
       - main
+      - wwu/test-github-actions
   workflow_dispatch:
 
 concurrency:
@@ -23,7 +24,7 @@ jobs:
   stresstest-build-test:
     runs-on: ubuntu-latest
     environment: TEST
-    #container: seconddinner/build:0.0.5
+    #container: seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -54,12 +55,23 @@ jobs:
       if: steps.filter.outputs.packer  == 'true'
       run: |
         cd $GITHUB_WORKSPACE/stress-test-loader
+        rm -rf cert
+        mkdir cert
+        cd cert
+        echo "${{ secrets.CA_KEY }}" > ca-key.pem
+        openssl req -new -x509 -key ca-key.pem -out ca-cert.pem -days 365 -subj "/O=seconddinner"
+        echo "Generating server's private key and CSR"
+        openssl req -newkey rsa:4096 -nodes -keyout server-key.pem -out server-req.pem -subj "/O=seconddinner"
+        echo "Signing server's CSR"
+        openssl x509 -req -in server-req.pem -days 60 -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial -out server-cert.pem
+        openssl x509 -in server-cert.pem -noout -text
+        cd $GITHUB_WORKSPACE/stress-test-loader
         bash ./cicd/ami/build-stress-test-loader.sh
 
   backend-test:
     runs-on: ubuntu-latest
     environment: TEST
-    #container: seconddinner/build:0.0.5
+    #container: seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -74,8 +86,7 @@ jobs:
             - 'games/**'
     
     - name: AWS Setup
-      if: |
-        steps.filter.outputs.infra-pulumi  == 'true' || steps.filter.outputs.games  == 'true'
+      #if: steps.filter.outputs.infra-pulumi  == 'true' || steps.filter.outputs.games  == 'true'
       uses: aws-actions/configure-aws-credentials@v1-node16
       with:
         aws-region: us-west-2
@@ -129,6 +140,19 @@ jobs:
 
     - name: run stress test
       run: |
+        cd $GITHUB_WORKSPACE/stress-test-loader
+        rm -rf client/cert
+        mkdir client/cert
+        echo "${{ secrets.CA_KEY }}" > ca-key.pem
+        openssl req -new -x509 -key ca-key.pem -out ca-cert.pem -days 365 -subj "/O=seconddinner"
+        cp ca-key.pem client/cert/ca-key.pem
+        cp ca-cert.pem client/cert/ca-cert.pem
+        cd $GITHUB_WORKSPACE/stress-test-loader/client/cert
+        echo "Generating client's private key and CSR"
+        openssl req -newkey rsa:4096 -nodes -keyout client-key.pem -out client-req.pem -subj "/O=seconddinner"
+        echo "Signing client's CSR"
+        openssl x509 -req -in client-req.pem -days 60 -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial -out client-cert.pem
+        openssl x509 -in client-cert.pem -noout -text
         cd $GITHUB_WORKSPACE/stress-test-loader/client
         export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
         json=$(cat <<EOF
@@ -168,8 +192,18 @@ jobs:
     - name: Wait for stress test to finish (sleep for ${{ vars.STRESS_TEST_TIME }} seconds)
       run: sleep ${{ vars.STRESS_TEST_TIME }}
 
+    - name: get stress test result
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > id_rsa
+        chmod 600 id_rsa
+        cat /tmp/IP.json | jq -r '.[][] | .public_ip' > /tmp/IP.txt
+        cat /tmp/IP.txt | while read -r ip; do
+          echo "Connecting to $ip through ssh"
+          ssh -n -i id_rsa -o StrictHostKeyChecking=no ubuntu@$ip "cat /tmp/stress-test-log"
+        done
+
     - name: pulumi destroy stress test infra
-      #if: steps.filter.outputs.infra-pulumi  == 'true'
+      if: always()
       run: |
         cd $GITHUB_WORKSPACE/infra-pulumi/Infra.Pulumi/Infra.Pulumi
         pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
