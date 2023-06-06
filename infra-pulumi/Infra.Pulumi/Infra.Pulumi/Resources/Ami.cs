@@ -1,18 +1,16 @@
 ﻿using Pulumi;
 using Aws = Pulumi.Aws;
 using Pulumi.Aws.Ec2;
+using Infra.Pulumi;
 
 namespace Infra.Pulumi.Resources;
 
 class Ami : ComponentResource
 {
-    [Output]
     public Output<string> AmiId { get; set; }
     
-    public Ami(string name, Aws.Provider provider, string region, ComponentResourceOptions opts = null) : base("stl:aws:Ami", name, opts)
+    public Ami(string name, string region, StressConfig cfg, ComponentResourceOptions opts = null) : base("stl:aws:Ami", name, opts)
     {
-        // Set up Config
-        var config = new Config();
 
         // Set up AMI
         var amiFilter = new Aws.Ec2.Inputs.GetAmiFilterArgs
@@ -30,12 +28,11 @@ class Ami : ComponentResource
 
         var stl = new Aws.Ec2.AmiCopy("stl-" + region, new Aws.Ec2.AmiCopyArgs
         {
-            Name = config.Require("name"),
+            Name = cfg.AmiName,
             SourceAmiId = amiId,
-            SourceAmiRegion = config.Require("source_ami_region")
+            SourceAmiRegion = cfg.SourceAmiRegion
         }, new CustomResourceOptions
         {
-            Provider = provider,
             Parent = this
         });
 

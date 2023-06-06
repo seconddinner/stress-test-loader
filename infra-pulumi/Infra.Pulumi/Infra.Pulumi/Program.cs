@@ -4,7 +4,6 @@ using McMaster.Extensions.CommandLineUtils;
 using Pulumi;
 using Pulumi.Automation;
 using Pulumi.Aws;
-using Config = Pulumi.Config;
 
 #pragma warning disable CS1998
 
@@ -56,43 +55,45 @@ public class DeployPulumiCommand
         {
             Environment.SetEnvironmentVariable(k, v);
         }
+        
+        var localPublicIp = Environment.GetEnvironmentVariable("stress_test_loader_allowed_cidr");
+        var publicKey = Environment.GetEnvironmentVariable("public_key");
+        var desiredCapacity = Environment.GetEnvironmentVariable("desired_capacity") ?? "2";
+        string s3ClientBucketName = Environment.GetEnvironmentVariable("s3_client_bucket_name");
+        string s3LogBucketName = Environment.GetEnvironmentVariable("s3_log_bucket_name");
+        string regions = Environment.GetEnvironmentVariable("regions") ?? "us-west-2";
+
+        var cfg = new StressConfig
+        {
+            Environment = ProjectName,
+            DesiredCapacity = int.Parse(desiredCapacity),
+            PublicKey = publicKey,
+            AllowedCidrBlocks = localPublicIp.Split(",").ToList(),
+            S3ClientBucketName = s3ClientBucketName,
+            S3LogBucketName = s3LogBucketName
+        };
 
         #region Deploy
         var program = PulumiFn.Create(async () =>
         {
-            var config = new Config();
-            List<string> regionList = new List<string>();
-            if (config.Get("regions") != null)
-            {
-                string regions = config.Get("regions")!;
-                // Remove the brackets and any whitespace
-                string trimmedInput = regions.Trim('[', ']', ' ');
-                // Split the string by commas to get individual elements
-                string[] elements = trimmedInput.Split(',');
-                regionList = new List<string>(elements);
-                for (int i = 0; i < regionList.Count; i++)
-                {
-                    regionList[i] = regionList[i].Trim(' ');
-                }
-            }
-            else
-            {
-                regionList.Add("us-west-2");
-            }
+            var s3 = new S3("stl-s3", cfg);
             
-            foreach (var region in regionList)
+            var regionList = regions.Split(',').ToList();
+            
+            foreach (var r in regionList)
             {
+                var region = r.Trim();
                 var provider = new Provider(region, new()
                 {
                     Region = region,
                 });
 
-                var ami = new Ami($"stl-ami-{region}", provider, region);
-                var iam = new Iam($"stl-iam-{region}", provider, region);
-                var vpc = new Vpc($"stl-vpc-{region}", provider, region);
-                var autoscaling = new Autoscaling($"stl-autoscaling-{region}", provider, region, ami.AmiId,
-                    iam.StressTestClientReadProfileName,vpc.MainVpcId, vpc.DefaultSecurityGroupId, 
-                    vpc.MainSubnetIds);
+                var ami = new Ami($"stl-ami-{region}", region, cfg, new ComponentResourceOptions { Provider = provider });
+                var iam = new Iam($"stl-iam-{region}", region, cfg, new ComponentResourceOptions { Provider = provider });
+                var vpc = new Vpc($"stl-vpc-{region}", region, cfg, new ComponentResourceOptions { Provider = provider });
+                var autoscaling = new Autoscaling($"stl-autoscaling-{region}", region, ami.AmiId,
+                    iam.StressTestClientReadProfileName,vpc.MainVpcId, vpc.MainSubnetIds, cfg, 
+                    new ComponentResourceOptions { Provider = provider });
             }
         });
 
@@ -105,7 +106,13 @@ public class DeployPulumiCommand
         {
             return await DeployHelpers.PreviewPulumiAsync(program, ProjectName, StackName, NoRefresh, cancellationToken);
         }
-
+        
+        // Delete IP.json if it exists
+        var filePath = Environment.GetEnvironmentVariable("ip_json_path") ?? "/tmp/IP.json";
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
         return await DeployHelpers.UpdatePulumiAsync(program, ProjectName, StackName, NoRefresh, cancellationToken);
         #endregion
     }

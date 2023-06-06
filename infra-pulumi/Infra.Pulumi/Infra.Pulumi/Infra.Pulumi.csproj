@@ -16,4 +16,8 @@
       <PackageReference Include="Pulumi.Aws" Version="5.42.0-alpha.1684524683" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Resources/stressclient-template.sh" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
 </Project>

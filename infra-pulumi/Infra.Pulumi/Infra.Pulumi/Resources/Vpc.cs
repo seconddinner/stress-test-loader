@@ -7,18 +7,12 @@ namespace Infra.Pulumi.Resources;
 
 class Vpc : ComponentResource
 {
-    [Output]
     public Output<string> MainVpcId { get; set; }
-    [Output]
-    public Output<string> DefaultSecurityGroupId { get; set; }
-    [Output]
+    
     public Output<ImmutableArray<string>> MainSubnetIds { get; set; }
 
-    public Vpc(string name, Aws.Provider provider, string region, ComponentResourceOptions opts = null) : base("stl:aws:Vpc", name, null)
+    public Vpc(string name, string region, StressConfig cfg, ComponentResourceOptions opts = null) : base("stl:aws:Vpc", name, opts)
     {
-        // Set up Config
-        var config = new Config();
-
         // Set up a VPC
         var available = Output.Create(Aws.GetAvailabilityZones.InvokeAsync(new Aws.GetAvailabilityZonesArgs()
         {
@@ -32,21 +26,20 @@ class Vpc : ComponentResource
             }
         }, new InvokeOptions
         {
-            Provider = provider
+            Parent = this
         }));
         
         var mainVpc = new Aws.Ec2.Vpc("mainVpc-" + region, new Aws.Ec2.VpcArgs
         {
-            CidrBlock = config.Require("cidr_block"), // default 10.10.0.0/16
+            CidrBlock = cfg.CidrBlock
         }, new CustomResourceOptions
         {
-            Provider = provider,
             Parent = this
         });
         this.MainVpcId = mainVpc.Id;
 
         // Create a default security group for the VPC
-        var defaultSecurityGroup = new Aws.Ec2.DefaultSecurityGroup(string.Format("stress_test_loader-instance-{0}-" + region, config.Require("environment")), new Aws.Ec2.DefaultSecurityGroupArgs
+        var defaultSecurityGroup = new Aws.Ec2.DefaultSecurityGroup(string.Format("stress_test_loader-instance-{0}-" + region, cfg.Environment), new Aws.Ec2.DefaultSecurityGroupArgs
         {
             VpcId = mainVpc.Id,
             Ingress = 
@@ -74,25 +67,22 @@ class Vpc : ComponentResource
             },
         }, new CustomResourceOptions
         {
-            Provider = provider,
             Parent = this
         });
-        this.DefaultSecurityGroupId = defaultSecurityGroup.Id;
 
         var mainSubnet = new List<Aws.Ec2.Subnet>();
         InputList<string> mainSubnetIds = Output.Create(new List<string>());
-        for (var rangeIndex = 0; rangeIndex < int.Parse(config.Require("az_count")); rangeIndex++)
+        for (var rangeIndex = 0; rangeIndex < cfg.AzCount; rangeIndex++)
         {
             var range = new { Value = rangeIndex };
             var subnet = new Aws.Ec2.Subnet($"mainSubnet-{range.Value}-" + region, new Aws.Ec2.SubnetArgs
             {
                 AvailabilityZone = available.Apply(av => av.Names[range.Value]),
                 VpcId = mainVpc.Id,
-                MapPublicIpOnLaunch = bool.Parse(config.Require("public_ip_on_launch")),
+                MapPublicIpOnLaunch = cfg.PublicIpOnLaunch,
                 CidrBlock = ReplaceIPandCIDR(mainVpc.CidrBlock, rangeIndex), // e.g., 10.10.0.0/22, 10.10.4.0/22
             }, new CustomResourceOptions
             {
-                Provider = provider,
                 Parent = this
             });
             mainSubnet.Add(subnet);
@@ -105,7 +95,6 @@ class Vpc : ComponentResource
             VpcId = mainVpc.Id,
         }, new CustomResourceOptions
         {
-            Provider = provider,
             Parent = this
         });
         var routeTable = new Aws.Ec2.RouteTable("routeTable-" + region, new Aws.Ec2.RouteTableArgs
@@ -121,11 +110,10 @@ class Vpc : ComponentResource
             },
         }, new CustomResourceOptions
         {
-            Provider = provider,
             Parent = this
         });
         var routeTableAssociation = new List<Aws.Ec2.RouteTableAssociation>();
-        for (var rangeIndex = 0; rangeIndex < int.Parse(config.Require("az_count")); rangeIndex++)
+        for (var rangeIndex = 0; rangeIndex < cfg.AzCount; rangeIndex++)
         {
             var range = new { Value = rangeIndex };
             routeTableAssociation.Add(new Aws.Ec2.RouteTableAssociation($"routeTableAssociation-{range.Value}-" + region, new Aws.Ec2.RouteTableAssociationArgs
@@ -134,7 +122,6 @@ class Vpc : ComponentResource
                 RouteTableId = routeTable.Id,
             }, new CustomResourceOptions
             {
-                Provider = provider,
                 Parent = this
             }));
         }
@@ -142,7 +129,7 @@ class Vpc : ComponentResource
         RegisterOutputs();
     }
 
-    public Output<string> ReplaceIPandCIDR(Output<string> input, int rangeIndex)
+    private Output<string> ReplaceIPandCIDR(Output<string> input, int rangeIndex)
     {
         return input.Apply(value =>
         {
