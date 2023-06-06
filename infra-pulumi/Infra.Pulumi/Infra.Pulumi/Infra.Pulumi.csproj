@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <RootNamespace>Infra.Pulumi</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AWSSDK.Core" Version="3.7.106.39" />
+      <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.2" />
+      <PackageReference Include="Pulumi.Automation" Version="3.54.1" />
+      <PackageReference Include="Pulumi.Aws" Version="5.42.0-alpha.1684524683" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Resources/stressclient-template.sh" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+</Project>
