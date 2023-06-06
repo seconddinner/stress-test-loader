@@ -11,7 +11,7 @@ class Vpc : ComponentResource
     
     public Output<ImmutableArray<string>> MainSubnetIds { get; set; }
 
-    public Vpc(string name, string region, StressConfig cfg, ComponentResourceOptions opts = null) : base("stl:aws:Vpc", name, opts)
+    public Vpc(StressConfig cfg, ComponentResourceOptions opts = null) : base("stl:aws:Vpc", $"stl-vpc-{cfg.CurrentRegion}", opts)
     {
         // Set up a VPC
         var available = Output.Create(Aws.GetAvailabilityZones.InvokeAsync(new Aws.GetAvailabilityZonesArgs()
@@ -21,7 +21,7 @@ class Vpc : ComponentResource
                 new GetAvailabilityZonesFilterArgs()
                 {
                     Name = "region-name",
-                    Values = { region }
+                    Values = { cfg.CurrentRegion }
                 }
             }
         }, new InvokeOptions
@@ -29,7 +29,7 @@ class Vpc : ComponentResource
             Parent = this
         }));
         
-        var mainVpc = new Aws.Ec2.Vpc("mainVpc-" + region, new Aws.Ec2.VpcArgs
+        var mainVpc = new Aws.Ec2.Vpc("mainVpc-" + cfg.CurrentRegion, new Aws.Ec2.VpcArgs
         {
             CidrBlock = cfg.CidrBlock
         }, new CustomResourceOptions
@@ -39,7 +39,8 @@ class Vpc : ComponentResource
         this.MainVpcId = mainVpc.Id;
 
         // Create a default security group for the VPC
-        var defaultSecurityGroup = new Aws.Ec2.DefaultSecurityGroup(string.Format("stress_test_loader-instance-{0}-" + region, cfg.Environment), new Aws.Ec2.DefaultSecurityGroupArgs
+        var defaultSecurityGroup = new Aws.Ec2.DefaultSecurityGroup(string.Format("stress_test_loader-instance-{0}-" 
+            + cfg.CurrentRegion, cfg.Environment), new Aws.Ec2.DefaultSecurityGroupArgs
         {
             VpcId = mainVpc.Id,
             Ingress = 
@@ -75,7 +76,7 @@ class Vpc : ComponentResource
         for (var rangeIndex = 0; rangeIndex < cfg.AzCount; rangeIndex++)
         {
             var range = new { Value = rangeIndex };
-            var subnet = new Aws.Ec2.Subnet($"mainSubnet-{range.Value}-" + region, new Aws.Ec2.SubnetArgs
+            var subnet = new Aws.Ec2.Subnet($"mainSubnet-{range.Value}-" + cfg.CurrentRegion, new Aws.Ec2.SubnetArgs
             {
                 AvailabilityZone = available.Apply(av => av.Names[range.Value]),
                 VpcId = mainVpc.Id,
@@ -90,14 +91,14 @@ class Vpc : ComponentResource
         }
         this.MainSubnetIds = mainSubnetIds;
         
-        var gw = new Aws.Ec2.InternetGateway("gw-" + region, new Aws.Ec2.InternetGatewayArgs
+        var gw = new Aws.Ec2.InternetGateway("gw-" + cfg.CurrentRegion, new Aws.Ec2.InternetGatewayArgs
         {
             VpcId = mainVpc.Id,
         }, new CustomResourceOptions
         {
             Parent = this
         });
-        var routeTable = new Aws.Ec2.RouteTable("routeTable-" + region, new Aws.Ec2.RouteTableArgs
+        var routeTable = new Aws.Ec2.RouteTable("routeTable-" + cfg.CurrentRegion, new Aws.Ec2.RouteTableArgs
         {
             VpcId = mainVpc.Id,
             Routes = 
@@ -116,7 +117,8 @@ class Vpc : ComponentResource
         for (var rangeIndex = 0; rangeIndex < cfg.AzCount; rangeIndex++)
         {
             var range = new { Value = rangeIndex };
-            routeTableAssociation.Add(new Aws.Ec2.RouteTableAssociation($"routeTableAssociation-{range.Value}-" + region, new Aws.Ec2.RouteTableAssociationArgs
+            routeTableAssociation.Add(new Aws.Ec2.RouteTableAssociation(
+                $"routeTableAssociation-{range.Value}-" + cfg.CurrentRegion, new Aws.Ec2.RouteTableAssociationArgs
             {
                 SubnetId = mainSubnet.Select(__item => __item.Id).ToList()[range.Value],
                 RouteTableId = routeTable.Id,

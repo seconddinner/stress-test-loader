@@ -7,13 +7,13 @@ namespace Infra.Pulumi.Resources;
 
 class Autoscaling : ComponentResource
 {
-    public Autoscaling(string name, string region, Input<string> amiId, 
+    public Autoscaling(Input<string> amiId, 
         Input<string> stressTestClientReadProfileName, Input<string> mainVpcId,
         InputList<string> mainSubnetIds, StressConfig cfg, ComponentResourceOptions opts = null) 
-        : base("stl:aws:Autoscaling", name, opts)
+        : base("stl:aws:Autoscaling", $"stl-autoscaling-{cfg.CurrentRegion}", opts)
     {
         // Create an AutoScaling Group
-        var sdStresstest = new Aws.Ec2.KeyPair("sdStresstest-" + region, new Aws.Ec2.KeyPairArgs
+        var sdStresstest = new Aws.Ec2.KeyPair("sdStresstest-" + cfg.CurrentRegion, new Aws.Ec2.KeyPairArgs
         {
             PublicKey = cfg.PublicKey ?? Environment.GetEnvironmentVariable("public_key"),
         }, new CustomResourceOptions
@@ -29,7 +29,7 @@ class Autoscaling : ComponentResource
         {
             cfg.PrometheusAllowedCidrBlocks
         };
-        var stresstestSecurityGroup = new Aws.Ec2.SecurityGroup("stresstestSecurityGroup-" + region, new Aws.Ec2.SecurityGroupArgs
+        var stresstestSecurityGroup = new Aws.Ec2.SecurityGroup("stresstestSecurityGroup-" + cfg.CurrentRegion, new Aws.Ec2.SecurityGroupArgs
         {
             VpcId = mainVpcId,
             Ingress = 
@@ -106,7 +106,7 @@ class Autoscaling : ComponentResource
         userData = userData.Replace("${telegraf_password}", cfg.TelegrafPassword);
         userData = userData.Replace("${telegraf_url}", cfg.TelegrafUrl);
 
-        var stressTestLoaderLaunchConfiguration = new Aws.Ec2.LaunchConfiguration("stressTestLoaderLaunchConfiguration-" + region, new Aws.Ec2.LaunchConfigurationArgs
+        var stressTestLoaderLaunchConfiguration = new Aws.Ec2.LaunchConfiguration("stressTestLoaderLaunchConfiguration-" + cfg.CurrentRegion, new Aws.Ec2.LaunchConfigurationArgs
         {
             NamePrefix = $"stress_test_loader-{cfg.Environment}",
             ImageId = amiId.Apply(x => x!.ToString())!,
@@ -131,7 +131,7 @@ class Autoscaling : ComponentResource
         });
         
 
-        var stressTestLoaderGroup = new Aws.AutoScaling.Group("stressTestLoaderGroup-" + region, new Aws.AutoScaling.GroupArgs
+        var stressTestLoaderGroup = new Aws.AutoScaling.Group("stressTestLoaderGroup-" + cfg.CurrentRegion, new Aws.AutoScaling.GroupArgs
         {
             LaunchConfiguration = stressTestLoaderLaunchConfiguration.Name,
             VpcZoneIdentifiers = mainSubnetIds,
@@ -176,7 +176,7 @@ class Autoscaling : ComponentResource
         StorePublicIpsToJson(stressTestLoaderGroup, amiId);
             
         // auto scale up policy
-        var stressTestLoaderUpPolicy = new Aws.AutoScaling.Policy("stressTestLoaderUpPolicy-" + region, new Aws.AutoScaling.PolicyArgs
+        var stressTestLoaderUpPolicy = new Aws.AutoScaling.Policy("stressTestLoaderUpPolicy-" + cfg.CurrentRegion, new Aws.AutoScaling.PolicyArgs
         {
             ScalingAdjustment = cfg.UpScalingAdjustment,
             AdjustmentType = "ChangeInCapacity",
@@ -187,7 +187,7 @@ class Autoscaling : ComponentResource
             Parent = this
         });
         // auto scale down policy
-        var stressTestLoaderDownPolicy = new Aws.AutoScaling.Policy("stressTestLoaderDownPolicy-" + region, new Aws.AutoScaling.PolicyArgs
+        var stressTestLoaderDownPolicy = new Aws.AutoScaling.Policy("stressTestLoaderDownPolicy-" + cfg.CurrentRegion, new Aws.AutoScaling.PolicyArgs
         {
             ScalingAdjustment = cfg.DownScalingAdjustment,
             AdjustmentType = "ChangeInCapacity",
@@ -197,7 +197,7 @@ class Autoscaling : ComponentResource
         {
             Parent = this
         });
-        var stressTestLoaderUpMetricAlarm = new Aws.CloudWatch.MetricAlarm("stressTestLoaderUpMetricAlarm-" + region, new Aws.CloudWatch.MetricAlarmArgs
+        var stressTestLoaderUpMetricAlarm = new Aws.CloudWatch.MetricAlarm("stressTestLoaderUpMetricAlarm-" + cfg.CurrentRegion, new Aws.CloudWatch.MetricAlarmArgs
         {
             ComparisonOperator = "GreaterThanOrEqualToThreshold",
             EvaluationPeriods = 2,
@@ -219,7 +219,7 @@ class Autoscaling : ComponentResource
         {
             Parent = this
         });
-        var stressTestLoaderDownMetricAlarm = new Aws.CloudWatch.MetricAlarm("stressTestLoaderDownMetricAlarm-" + region, new Aws.CloudWatch.MetricAlarmArgs
+        var stressTestLoaderDownMetricAlarm = new Aws.CloudWatch.MetricAlarm("stressTestLoaderDownMetricAlarm-" + cfg.CurrentRegion, new Aws.CloudWatch.MetricAlarmArgs
         {
             ComparisonOperator = "LessThanOrEqualToThreshold",
             EvaluationPeriods = 120,

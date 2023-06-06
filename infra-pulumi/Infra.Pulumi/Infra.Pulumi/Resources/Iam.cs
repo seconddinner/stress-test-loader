@@ -8,10 +8,10 @@ namespace Infra.Pulumi.Resources;
 class Iam : ComponentResource
 {
     public Output<string> StressTestClientReadProfileName { get; set; }
-    public Iam(string name, string region, StressConfig cfg, ComponentResourceOptions opts = null) : base("stl:aws:Iam", name, opts)
+    public Iam(StressConfig cfg, ComponentResourceOptions opts = null) : base("stl:aws:Iam", $"stl-iam-{cfg.CurrentRegion}", opts)
     {
         // Create an IAM
-        var stressTestClientReadRole = new Aws.Iam.Role("stressTestClientReadRole-" + region, new Aws.Iam.RoleArgs
+        var stressTestClientReadRole = new Aws.Iam.Role("stressTestClientReadRole-" + cfg.CurrentRegion, new Aws.Iam.RoleArgs
         {
             AssumeRolePolicy = new Policy().WithStatements(
               new Statement(Statement.StatementEffect.Allow)
@@ -28,7 +28,7 @@ class Iam : ComponentResource
         {
           Parent = this
         });
-        var stressTestClientReadProfile = new Aws.Iam.InstanceProfile("stressTestClientReadProfile-" + region, new Aws.Iam.InstanceProfileArgs
+        var stressTestClientReadProfile = new Aws.Iam.InstanceProfile("stressTestClientReadProfile-" + cfg.CurrentRegion, new Aws.Iam.InstanceProfileArgs
         {
             Role = stressTestClientReadRole.Name,
         }, new CustomResourceOptions
@@ -36,7 +36,7 @@ class Iam : ComponentResource
           Parent = this
         });
         this.StressTestClientReadProfileName = stressTestClientReadProfile.Name;
-        var stressTestClientRead = new Aws.Iam.RolePolicy("stressTestClientRead-" + region, new()
+        var stressTestClientRead = new Aws.Iam.RolePolicy("stressTestClientRead-" + cfg.CurrentRegion, new()
         {
             Role = stressTestClientReadRole.Id,
             Policy = JsonSerializer.Serialize(new Dictionary<string, object?>

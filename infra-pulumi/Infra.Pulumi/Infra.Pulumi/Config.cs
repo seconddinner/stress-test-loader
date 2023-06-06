@@ -8,6 +8,7 @@ public class StressConfig
     public string Environment { get; set; }    
     public string S3ClientBucketName { get; set; }
     public string S3LogBucketName { get; set; }
+    public string CurrentRegion { get; set; }
     public List<string> AllowedCidrBlocks { get; set; }
     public int DesiredCapacity { get; set; }
 

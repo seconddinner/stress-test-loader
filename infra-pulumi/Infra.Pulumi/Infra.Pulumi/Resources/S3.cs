@@ -6,7 +6,7 @@ namespace Infra.Pulumi.Resources;
 
 class S3 : ComponentResource
 {
-    public S3(string name, StressConfig cfg, ComponentResourceOptions opts = null) : base("stl:aws:S3", name, opts)
+    public S3(StressConfig cfg, ComponentResourceOptions opts = null) : base("stl:aws:S3", "stl-s3", opts)
     {
 
         foreach (var bucketName in new List<string> { cfg.S3ClientBucketName, cfg.S3LogBucketName })

@@ -70,13 +70,14 @@ public class DeployPulumiCommand
             PublicKey = publicKey,
             AllowedCidrBlocks = localPublicIp.Split(",").ToList(),
             S3ClientBucketName = s3ClientBucketName,
-            S3LogBucketName = s3LogBucketName
+            S3LogBucketName = s3LogBucketName,
+            Regions = regions
         };
 
         #region Deploy
         var program = PulumiFn.Create(async () =>
         {
-            var s3 = new S3("stl-s3", cfg);
+            var s3 = new S3(cfg);
             
             var regionList = regions.Split(',').ToList();
             
@@ -87,11 +88,11 @@ public class DeployPulumiCommand
                 {
                     Region = region,
                 });
-
-                var ami = new Ami($"stl-ami-{region}", region, cfg, new ComponentResourceOptions { Provider = provider });
-                var iam = new Iam($"stl-iam-{region}", region, cfg, new ComponentResourceOptions { Provider = provider });
-                var vpc = new Vpc($"stl-vpc-{region}", region, cfg, new ComponentResourceOptions { Provider = provider });
-                var autoscaling = new Autoscaling($"stl-autoscaling-{region}", region, ami.AmiId,
+                cfg.CurrentRegion = region;
+                var ami = new Ami(cfg, new ComponentResourceOptions { Provider = provider });
+                var iam = new Iam(cfg, new ComponentResourceOptions { Provider = provider });
+                var vpc = new Vpc(cfg, new ComponentResourceOptions { Provider = provider });
+                var autoscaling = new Autoscaling(ami.AmiId,
                     iam.StressTestClientReadProfileName,vpc.MainVpcId, vpc.MainSubnetIds, cfg, 
                     new ComponentResourceOptions { Provider = provider });
             }
