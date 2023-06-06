@@ -15,7 +15,7 @@ class Autoscaling : ComponentResource
         // Create an AutoScaling Group
         var sdStresstest = new Aws.Ec2.KeyPair("sdStresstest-" + cfg.CurrentRegion, new Aws.Ec2.KeyPairArgs
         {
-            PublicKey = cfg.PublicKey ?? Environment.GetEnvironmentVariable("public_key"),
+            PublicKey = cfg.PublicKey,
         }, new CustomResourceOptions
         {
             Parent = this

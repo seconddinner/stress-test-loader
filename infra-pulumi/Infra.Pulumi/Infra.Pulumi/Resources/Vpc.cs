@@ -39,8 +39,9 @@ class Vpc : ComponentResource
         this.MainVpcId = mainVpc.Id;
 
         // Create a default security group for the VPC
-        var defaultSecurityGroup = new Aws.Ec2.DefaultSecurityGroup(string.Format("stress_test_loader-instance-{0}-" 
-            + cfg.CurrentRegion, cfg.Environment), new Aws.Ec2.DefaultSecurityGroupArgs
+        var defaultSecurityGroup = new Aws.Ec2.DefaultSecurityGroup(
+            $"stress_test_loader-instance-{cfg.Environment}-{cfg.CurrentRegion}", 
+            new Aws.Ec2.DefaultSecurityGroupArgs
         {
             VpcId = mainVpc.Id,
             Ingress = 

@@ -56,23 +56,37 @@ public class DeployPulumiCommand
             Environment.SetEnvironmentVariable(k, v);
         }
         
-        var localPublicIp = Environment.GetEnvironmentVariable("stress_test_loader_allowed_cidr");
-        var publicKey = Environment.GetEnvironmentVariable("public_key");
+        var requiredEnvList = new List<string> { "stress_test_loader_allowed_cidr", "public_key",
+            "s3_client_bucket_name", "s3_log_bucket_name" };
+        foreach (var env in requiredEnvList)
+        {
+            if (Environment.GetEnvironmentVariable(env) == null)
+            {
+                Console.WriteLine($"[Error] Need to set the \"{env}\" environment variable");
+                throw new NullReferenceException();
+            }
+        }
+        
         var desiredCapacity = Environment.GetEnvironmentVariable("desired_capacity") ?? "2";
-        string s3ClientBucketName = Environment.GetEnvironmentVariable("s3_client_bucket_name");
-        string s3LogBucketName = Environment.GetEnvironmentVariable("s3_log_bucket_name");
-        string regions = Environment.GetEnvironmentVariable("regions") ?? "us-west-2";
+        var regions = Environment.GetEnvironmentVariable("regions") ?? "us-west-2";
 
         var cfg = new StressConfig
         {
             Environment = ProjectName,
             DesiredCapacity = int.Parse(desiredCapacity),
-            PublicKey = publicKey,
-            AllowedCidrBlocks = localPublicIp.Split(",").ToList(),
-            S3ClientBucketName = s3ClientBucketName,
-            S3LogBucketName = s3LogBucketName,
+            PublicKey = Environment.GetEnvironmentVariable("public_key")!,
+            AllowedCidrBlocks = Environment.GetEnvironmentVariable("stress_test_loader_allowed_cidr")!.Split(",").ToList(),
+            S3ClientBucketName = Environment.GetEnvironmentVariable("s3_client_bucket_name")!,
+            S3LogBucketName = Environment.GetEnvironmentVariable("s3_log_bucket_name")!,
             Regions = regions
         };
+        
+        // Delete IP.json if it exists
+        var filePath = Environment.GetEnvironmentVariable("ip_json_path") ?? "/tmp/IP.json";
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
 
         #region Deploy
         var program = PulumiFn.Create(async () =>
@@ -108,12 +122,6 @@ public class DeployPulumiCommand
             return await DeployHelpers.PreviewPulumiAsync(program, ProjectName, StackName, NoRefresh, cancellationToken);
         }
         
-        // Delete IP.json if it exists
-        var filePath = Environment.GetEnvironmentVariable("ip_json_path") ?? "/tmp/IP.json";
-        if (File.Exists(filePath))
-        {
-            File.Delete(filePath);
-        }
         return await DeployHelpers.UpdatePulumiAsync(program, ProjectName, StackName, NoRefresh, cancellationToken);
         #endregion
     }

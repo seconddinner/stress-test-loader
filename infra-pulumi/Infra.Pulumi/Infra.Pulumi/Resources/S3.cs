@@ -29,8 +29,6 @@ class S3 : ComponentResource
                 });
             }
         }
-        
-        RegisterOutputs();
     }
 }
 
