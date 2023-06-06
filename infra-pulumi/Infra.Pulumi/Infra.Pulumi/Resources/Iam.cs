@@ -27,7 +27,7 @@ class Iam : ComponentResource
                 .WithActionIdentifiers(new ActionIdentifier("s3:GetObject"))
                 .WithResources(new Resource($"arn:aws:s3:::{cfg.S3ClientBucketName}/*")),
             new Statement(Statement.StatementEffect.Allow)
-                .WithId("GetObjectsStatement")
+                .WithId("PutObjectsStatement")
                 .WithActionIdentifiers(new ActionIdentifier("s3:PutObject"))
                 .WithResources(new Resource($"arn:aws:s3:::{cfg.S3LogBucketName}/*")));
         
