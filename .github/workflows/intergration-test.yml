@@ -22,17 +22,17 @@ permissions:
   packages: read
 
 jobs:
-  stresstest-build-test:
+
+  stress-test:
     runs-on: ubuntu-latest
     environment: TEST
-    container: 
+    container:
       image: ghcr.io/seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}
     env:
       SOURCE: ${{ github.ref_name }}
-
     steps:
       # workaround for the "fatal: detected dubious ownership in repository" error
       # this should be a github's problem
@@ -47,24 +47,29 @@ jobs:
       id: filter
       with:
         filters: |
+          infra-pulumi:
+            - 'infra-pulumi/**'
+          games:
+            - 'games/**'
           stress-test-loader:
             - 'stress-test-loader/**'
           packer:
             - 'stress-test-loader/cicd/**'
           docs:
             - 'docs/**'
-          infra-pulumi:
-            - 'infra-pulumi/**'
-    - name: build
-      if: steps.filter.outputs.stress-test-loader  == 'true'
-      run: cd stress-test-loader; bash ./build.sh
+    
     - name: AWS Setup
-      if: steps.filter.outputs.infra-pulumi  == 'true'
+      #if: steps.filter.outputs.infra-pulumi  == 'true' || steps.filter.outputs.games  == 'true'
       uses: aws-actions/configure-aws-credentials@v1-node16
       with:
         aws-region: us-west-2
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         role-session-name: stresstest-loader-githubaction-aws-role
+
+    - name: stress test loader build
+      if: steps.filter.outputs.stress-test-loader  == 'true'
+      run: cd stress-test-loader; bash ./build.sh
+
     - name: packer build
       if: steps.filter.outputs.packer  == 'true'
       run: |
@@ -81,40 +86,6 @@ jobs:
         openssl x509 -in server-cert.pem -noout -text
         cd $GITHUB_WORKSPACE/stress-test-loader
         bash ./cicd/ami/build-stress-test-loader.sh
-
-  backend-test:
-    runs-on: ubuntu-latest
-    environment: TEST
-    container:
-      image: ghcr.io/seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.github_token }}
-    env:
-      SOURCE: ${{ github.ref_name }}
-    steps:
-    - name: Change Owner of Container Working Directory
-      run: chown root:root .
-
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters: |
-          infra-pulumi:
-            - 'infra-pulumi/**'
-          games:
-            - 'games/**'
-    
-    - name: AWS Setup
-      #if: steps.filter.outputs.infra-pulumi  == 'true' || steps.filter.outputs.games  == 'true'
-      uses: aws-actions/configure-aws-credentials@v1-node16
-      with:
-        aws-region: us-west-2
-        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-        role-session-name: stresstest-loader-githubaction-aws-role
     
     - name: pulumi backend infra
       if: steps.filter.outputs.games  == 'true'
