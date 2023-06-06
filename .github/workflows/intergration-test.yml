@@ -215,7 +215,7 @@ jobs:
         cd $GITHUB_WORKSPACE/stress-test-loader/client
         maxIterations=10
         iterations=0
-        interval=20
+        interval=$(${{ vars.STRESS_TEST_TOTAL_TIME }}/(maxIterations/2))
         searchString="running stress tests count: 0"
         
         while [ $iterations -lt $maxIterations ]; do
