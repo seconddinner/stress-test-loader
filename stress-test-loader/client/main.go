@@ -131,6 +131,7 @@ func main() {
 				runningCount := callServer(&pbRequest, port, ipList, tlsCredentials, "poll")
 				if runningCount == 0 {
 					fmt.Println("All stress tests finished. Exiting")
+					return
 				} else {
 					fmt.Println("Stress tests on", runningCount, "servers not finished. Sleeping for", interval, "seconds")
 					time.Sleep(time.Duration(interval) * time.Second)

@@ -20,15 +20,7 @@ class Autoscaling : ComponentResource
         {
             Parent = this
         });
-
-        var cidrBlocks = new InputList<string>
-        {
-            cfg.AllowedCidrBlocks
-        };
-        var prometheusCirdBlocks = new InputList<string>
-        {
-            cfg.PrometheusAllowedCidrBlocks
-        };
+        
         var stresstestSecurityGroup = new Aws.Ec2.SecurityGroup("stresstestSecurityGroup-" + cfg.CurrentRegion, new Aws.Ec2.SecurityGroupArgs
         {
             VpcId = mainVpcId,
@@ -39,45 +31,42 @@ class Autoscaling : ComponentResource
                     FromPort = 0,
                     ToPort = 8,
                     Protocol = "icmp",
-                    CidrBlocks = cidrBlocks,
+                    CidrBlocks = cfg.AllowedCidrBlocks,
                 },
                 new Aws.Ec2.Inputs.SecurityGroupIngressArgs
                 {
                     FromPort = 22,
                     ToPort = 22,
                     Protocol = "TCP",
-                    CidrBlocks = cidrBlocks,
+                    CidrBlocks = cfg.AllowedCidrBlocks,
                 },
                 new Aws.Ec2.Inputs.SecurityGroupIngressArgs
                 {
                     FromPort = cfg.StlPort,
                     ToPort = cfg.StlPort,
                     Protocol = "TCP",
-                    CidrBlocks = cidrBlocks,
+                    CidrBlocks = cfg.AllowedCidrBlocks,
                 },
                 new Aws.Ec2.Inputs.SecurityGroupIngressArgs
                 {
                     FromPort = 9100,
                     ToPort = 9100,
                     Protocol = "TCP",
-                    CidrBlocks = prometheusCirdBlocks,
+                    CidrBlocks = cfg.PrometheusAllowedCidrBlocks,
                 },
                 new Aws.Ec2.Inputs.SecurityGroupIngressArgs
                 {
                     FromPort = 9301,
                     ToPort = 9301,
                     Protocol = "TCP",
-                    CidrBlocks = prometheusCirdBlocks,
+                    CidrBlocks = cfg.PrometheusAllowedCidrBlocks,
                 },
                 new Aws.Ec2.Inputs.SecurityGroupIngressArgs
                 {
                     FromPort = cfg.StlPort,
                     ToPort = cfg.StlPort,
                     Protocol = "TCP",
-                    CidrBlocks = 
-                    {
-                        cfg.CidrBlock
-                    },
+                    CidrBlocks = cfg.VpcCidrBlock,
                 },
             },
             Egress = 
@@ -87,10 +76,7 @@ class Autoscaling : ComponentResource
                     FromPort = 0,
                     ToPort = 0,
                     Protocol = "-1",
-                    CidrBlocks = 
-                    {
-                        cfg.EgressAllowedCidr
-                    },
+                    CidrBlocks = cfg.EgressAllowedCidrBlocks
                 },
             },
         }, new CustomResourceOptions

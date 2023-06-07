@@ -14,11 +14,11 @@ public class StressConfig
 
 
     // Settings with defaults
-    public string CidrBlock { get; set; } = "10.10.0.0/16";
-    public string PrometheusAllowedCidrBlocks { get; set; } = "0.0.0.0/0";
+    public string VpcCidrBlock { get; set; } = "10.10.0.0/16";
+    public List<string> PrometheusAllowedCidrBlocks { get; set; } = new List<string> {"0.0.0.0/0"};
     public string AmiName { get; set; } = "stl-stress_test_loader-cluster";
     public string SourceAmiRegion { get; set; } = "us-west-2";
-    public string EgressAllowedCidr { get; set; } = "0.0.0.0/0";
+    public List<string> EgressAllowedCidrBlocks { get; set; } = new List<string> {"0.0.0.0/0"};
     public string InstanceType { get; set; } = "t4g.nano";
     public string TelegrafUsername { get; set; } = "admin";
     public string TelegrafPassword { get; set; } = "";
