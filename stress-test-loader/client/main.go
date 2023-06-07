@@ -168,7 +168,7 @@ func main() {
 				fmt.Println("stop stress test")
 			} else {
 				fmt.Println("get stress test status")
-				fmt.Println("running stress tests count: ", runningCount)
+				fmt.Println("running stress tests count:", runningCount)
 			}
 
 		}
