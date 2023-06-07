@@ -74,14 +74,8 @@ jobs:
         cd $GITHUB_WORKSPACE/stress-test-loader
         rm -rf cert
         mkdir cert
-        cd cert
-        echo "${{ secrets.CA_KEY }}" > ca-key.pem
-        openssl req -new -x509 -key ca-key.pem -out ca-cert.pem -days 365 -subj "/O=seconddinner"
-        echo "Generating server's private key and CSR"
-        openssl req -newkey rsa:4096 -nodes -keyout server-key.pem -out server-req.pem -subj "/O=seconddinner"
-        echo "Signing server's CSR"
-        openssl x509 -req -in server-req.pem -days 60 -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial -out server-cert.pem
-        openssl x509 -in server-cert.pem -noout -text
+        echo "${{ secrets.CA_KEY }}" > cert/ca-key.pem
+        bash gen_cert.sh
         cd $GITHUB_WORKSPACE/stress-test-loader
         bash ./cicd/ami/build-stress-test-loader.sh
     
@@ -131,19 +125,6 @@ jobs:
 
     - name: run stress test
       run: |
-        cd $GITHUB_WORKSPACE/stress-test-loader
-        rm -rf client/cert
-        mkdir client/cert
-        echo "${{ secrets.CA_KEY }}" > ca-key.pem
-        openssl req -new -x509 -key ca-key.pem -out ca-cert.pem -days 365 -subj "/O=seconddinner"
-        cp ca-key.pem client/cert/ca-key.pem
-        cp ca-cert.pem client/cert/ca-cert.pem
-        cd $GITHUB_WORKSPACE/stress-test-loader/client/cert
-        echo "Generating client's private key and CSR"
-        openssl req -newkey rsa:4096 -nodes -keyout client-key.pem -out client-req.pem -subj "/O=seconddinner"
-        echo "Signing client's CSR"
-        openssl x509 -req -in client-req.pem -days 60 -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial -out client-cert.pem
-        openssl x509 -in client-cert.pem -noout -text
         cd $GITHUB_WORKSPACE/stress-test-loader/client
         VERSION=$(git rev-parse --short HEAD)
         s3_key=simple-stress-test-client-$VERSION.tgz
