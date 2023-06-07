@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+rm -rf client/cert
+mkdir client/cert
+
 cp cert/ca-key.pem client/cert/ca-key.pem
 cp cert/ca-cert.pem client/cert/ca-cert.pem
 cd cert

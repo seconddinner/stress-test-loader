@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 
-rm -r cert
-rm -r client/cert
-
+rm -rf cert
 mkdir cert
-mkdir client/cert
 
 cd cert
 # Generate CA's private key and self-signed certificate
