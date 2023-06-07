@@ -151,7 +151,7 @@ jobs:
         EOF
         )
         echo "$json" > stresstest.json
-        go run main.go stresstest.json /tmp/IP.json
+        go run main.go stresstest.json /tmp/IP.json ${{ vars.STRESS_TEST_TOTAL_TIME }}
       env:
         s3_client_bucket_name: ${{ vars.S3_CLIENT_BUCKET_NAME }}
         exec_name: ${{ vars.EXEC_NAME }}
@@ -161,33 +161,6 @@ jobs:
         env2_value: ${{ vars.ENV2_VALUE }}
         env3_name: ${{ vars.ENV3_NAME }}
         env3_value: ${{ vars.ENV3_VALUE }}
-    
-    - name: check stress test status
-      run: |
-        cd $GITHUB_WORKSPACE/stress-test-loader/client
-        maxIterations=10
-        iterations=0
-        interval=$((${{ vars.STRESS_TEST_TOTAL_TIME }}/(maxIterations/2)))
-        searchString="running stress tests count: 0"
-        
-        while [ $iterations -lt $maxIterations ]; do
-          output=$(go run main.go -p /tmp/IP.json)
-          echo "$output" | tail -n 1
-          if echo "$output" | grep -q "$searchString"; then
-            echo "Stress tests finished"
-            break
-          else
-            echo "Stress tests running. Sleeping for $interval seconds ..."
-            sleep $interval
-            iterations=$((iterations + 1))
-          fi
-        done
-
-        if [ $iterations -eq $maxIterations ]; then
-          echo "Maximum iterations reached ($maxIterations) but stress tests still running"
-          echo "Stopping the stress tests"
-          go run main.go -s /tmp/IP.json
-        fi
 
     - name: get stress test result
       run: |

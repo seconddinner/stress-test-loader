@@ -111,6 +111,7 @@ Duration: 4m20s
 ### Run the stress test
 1. ```cd stress-test-loader/client```
 1. Run stress test ```go run main.go stresstest.json /tmp/IP.json```
+1. You can let the stress test loader client to wait for the stress tests to finish by specifying a maximum time to wait
 1. If you gave an ssh public key, you can ssh into the ec2 instance and check its systemd service log ```journalctl -f -u stress*```
 1. If you are running our simple-stress-test-client, you can check the log ```cat /tmp/stresstest-log```
 1. To check the status of the stress tests (running or finished) ```go run main.go -p /tmp/IP.json```
