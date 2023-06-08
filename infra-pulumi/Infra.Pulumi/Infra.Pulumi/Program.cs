@@ -82,7 +82,6 @@ public class DeployPulumiCommand
         };
         
         // Reserved for future features
-        cfg.EgressAllowedCidrBlocks = cfg.AllowedCidrBlocks;
         cfg.PrometheusAllowedCidrBlocks = cfg.AllowedCidrBlocks;
         
         // Delete IP.json if it exists
