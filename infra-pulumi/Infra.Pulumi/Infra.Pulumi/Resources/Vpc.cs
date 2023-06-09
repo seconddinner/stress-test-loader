@@ -31,7 +31,7 @@ class Vpc : ComponentResource
         
         var mainVpc = new Aws.Ec2.Vpc("mainVpc-" + cfg.CurrentRegion, new Aws.Ec2.VpcArgs
         {
-            CidrBlock = cfg.CidrBlock
+            CidrBlock = cfg.VpcCidrBlock
         }, new CustomResourceOptions
         {
             Parent = this

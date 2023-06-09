@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -24,6 +26,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // tag the version of the code here
@@ -36,6 +39,13 @@ var ServerIPAddress string
 type server struct {
 	pb.StressTestLoaderServer
 }
+
+// grpc auth
+const (
+	serverCertFile   = "cert/server-cert.pem"
+	serverKeyFile    = "cert/server-key.pem"
+	clientCACertFile = "cert/ca-cert.pem"
+)
 
 func ensureDir(dirName string) error {
 	err := os.Mkdir(dirName, 0755)
@@ -193,6 +203,17 @@ func (s *server) StartStressTest(ctx context.Context, in *pb.TestRequest) (*pb.T
 	return &pb.TestReply{Status: in.S3Key + msg}, nil
 }
 
+// get stress test status
+func (s *server) GetStressTestStatus(ctx context.Context, in *pb.TestRequest) (*pb.TestReply, error) {
+	var msg string
+	if T.running == true {
+		msg = " stress-test running"
+	} else {
+		msg = " stress-test completed"
+	}
+	return &pb.TestReply{Status: in.S3Key + msg}, nil
+}
+
 // stop stress test
 func (s *server) StopStressTest(ctx context.Context, in *pb.TestRequest) (*pb.TestReply, error) {
 	err, msg := T.stopStressTest(in)
@@ -253,7 +274,41 @@ func EC2Metadata() (IPAddress string) {
 	return
 }
 
+func loadTLSCredentials() (credentials.TransportCredentials, error) {
+	// Load certificate of the CA who signed client's certificate
+	pemClientCA, err := ioutil.ReadFile(clientCACertFile)
+	if err != nil {
+		return nil, err
+	}
+
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(pemClientCA) {
+		return nil, fmt.Errorf("failed to add client CA's certificate")
+	}
+
+	// Load server's certificate and private key
+	serverCert, err := tls.LoadX509KeyPair(serverCertFile, serverKeyFile)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the credentials and return it
+	config := &tls.Config{
+		Certificates: []tls.Certificate{serverCert},
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		ClientCAs:    certPool,
+	}
+
+	return credentials.NewTLS(config), nil
+}
+
 func main() {
+
+	tlsCredentials, err := loadTLSCredentials()
+	if err != nil {
+		log.Fatalf("cannot load TLS credentials: %w", err)
+		return
+	}
 
 	ServerIPAddress = EC2Metadata()
 	lis, err := net.Listen("tcp", ":"+strconv.FormatInt(int64(StressTestLoaderConfig.ListenPort), 10))
@@ -268,7 +323,7 @@ func main() {
 		}
 	}
 	// setup grpc server, this app is build for external config if needed in the future
-	s := grpc.NewServer()
+	s := grpc.NewServer(grpc.Creds(tlsCredentials))
 
 	pb.RegisterStressTestLoaderServer(s, &server{})
 	log.Printf("%s grpc server listening at %v.", Version, lis.Addr())

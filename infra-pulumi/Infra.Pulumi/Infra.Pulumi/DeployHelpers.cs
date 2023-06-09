@@ -81,7 +81,7 @@ public static class DeployHelpers
         var stackArgs = new InlineProgramArgs(projectName, stackName, program);
         var plugins = new Dictionary<string, string>
         {
-            { "aws", "v4.24.1" },
+            { "aws", "v5.41.0" },
         };
 
         var config = new Dictionary<string, ConfigValue>

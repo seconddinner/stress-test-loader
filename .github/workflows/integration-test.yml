@@ -18,49 +18,26 @@ concurrency:
 permissions:
   id-token: write
   contents: read
+  packages: read
 
 jobs:
-  stresstest-build-test:
+  stress-test:
     runs-on: ubuntu-latest
     environment: TEST
-    #container: seconddinner/build:0.0.5
+    container:
+      image: ghcr.io/seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    env:
+      SOURCE: ${{ github.ref_name }}
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters: |
-          stress-test-loader:
-            - 'stress-test-loader/**'
-          packer:
-            - 'stress-test-loader/cicd/**'
-          docs:
-            - 'docs/**'
-          infra-pulumi:
-            - 'infra-pulumi/**'
-    - name: build
-      if: steps.filter.outputs.stress-test-loader  == 'true'
-      run: cd stress-test-loader; bash ./build.sh
-    - name: AWS Setup
-      if: steps.filter.outputs.infra-pulumi  == 'true'
-      uses: aws-actions/configure-aws-credentials@v1-node16
-      with:
-        aws-region: us-west-2
-        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-        role-session-name: stresstest-loader-githubaction-aws-role
-    - name: packer build
-      if: steps.filter.outputs.packer  == 'true'
-      run: |
-        cd $GITHUB_WORKSPACE/stress-test-loader
-        bash ./cicd/ami/build-stress-test-loader.sh
+      # workaround for the "fatal: detected dubious ownership in repository" error
+      # this should be a github's problem
+      # https://github.com/actions/runner-images/issues/6775
+    - name: Change Owner of Container Working Directory
+      run: chown root:root .
 
-  backend-test:
-    runs-on: ubuntu-latest
-    environment: TEST
-    #container: seconddinner/build:0.0.5
-    steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
@@ -72,15 +49,35 @@ jobs:
             - 'infra-pulumi/**'
           games:
             - 'games/**'
+          stress-test-loader:
+            - 'stress-test-loader/**'
+          packer:
+            - 'stress-test-loader/cicd/**'
+          docs:
+            - 'docs/**'
     
     - name: AWS Setup
-      if: |
-        steps.filter.outputs.infra-pulumi  == 'true' || steps.filter.outputs.games  == 'true'
+      #if: steps.filter.outputs.infra-pulumi  == 'true' || steps.filter.outputs.games  == 'true'
       uses: aws-actions/configure-aws-credentials@v1-node16
       with:
         aws-region: us-west-2
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         role-session-name: stresstest-loader-githubaction-aws-role
+
+    - name: stress test loader build
+      if: steps.filter.outputs.stress-test-loader  == 'true'
+      run: cd stress-test-loader; bash ./build.sh
+
+    - name: packer build
+      if: steps.filter.outputs.packer  == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/stress-test-loader
+        rm -rf cert
+        mkdir cert
+        echo "${{ secrets.CA_KEY }}" > cert/ca-key.pem
+        bash gen_cert.sh
+        cd $GITHUB_WORKSPACE/stress-test-loader
+        bash ./cicd/ami/build-stress-test-loader.sh
     
     - name: pulumi backend infra
       if: steps.filter.outputs.games  == 'true'
@@ -118,10 +115,9 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/simple-stress-test-client/StressTest
         dotnet publish -r linux-arm64 --self-contained true -c Release
-        cd bin/Release
-        cd "$(ls -d */ | head -n 1)"
-        cd linux-arm64/publish
-        export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
+        cd bin/Release/net6.0/linux-arm64/publish
+        VERSION=$(git rev-parse --short HEAD)
+        s3_key=simple-stress-test-client-$VERSION.tgz
         tar czf /tmp/s3_key.tgz ./
         aws s3 cp /tmp/s3_key.tgz s3://$s3_client_bucket_name/$s3_key
       env:
@@ -130,7 +126,8 @@ jobs:
     - name: run stress test
       run: |
         cd $GITHUB_WORKSPACE/stress-test-loader/client
-        export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
+        VERSION=$(git rev-parse --short HEAD)
+        s3_key=simple-stress-test-client-$VERSION.tgz
         json=$(cat <<EOF
         {
             "s3": "$s3_client_bucket_name",
@@ -154,7 +151,7 @@ jobs:
         EOF
         )
         echo "$json" > stresstest.json
-        go run main.go stresstest.json /tmp/IP.json
+        go run main.go stresstest.json /tmp/IP.json ${{ vars.STRESS_TEST_TOTAL_TIME }}
       env:
         s3_client_bucket_name: ${{ vars.S3_CLIENT_BUCKET_NAME }}
         exec_name: ${{ vars.EXEC_NAME }}
@@ -164,12 +161,19 @@ jobs:
         env2_value: ${{ vars.ENV2_VALUE }}
         env3_name: ${{ vars.ENV3_NAME }}
         env3_value: ${{ vars.ENV3_VALUE }}
-    
-    - name: Wait for stress test to finish (sleep for ${{ vars.STRESS_TEST_TIME }} seconds)
-      run: sleep ${{ vars.STRESS_TEST_TIME }}
+
+    - name: get stress test result
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > id_rsa
+        chmod 600 id_rsa
+        cat /tmp/IP.json | jq -r '.[][] | .public_ip' > /tmp/IP.txt
+        cat /tmp/IP.txt | while read -r ip; do
+          echo "Connecting to $ip through ssh"
+          ssh -n -i id_rsa -o StrictHostKeyChecking=no ubuntu@$ip "cat /tmp/stress-test-log"
+        done
 
     - name: pulumi destroy stress test infra
-      #if: steps.filter.outputs.infra-pulumi  == 'true'
+      if: always()
       run: |
         cd $GITHUB_WORKSPACE/infra-pulumi/Infra.Pulumi/Infra.Pulumi
         pulumi login ${{ secrets.SD_STRESSTESTLOADER_PULUMI_BACKEND }}
@@ -197,7 +201,8 @@ jobs:
 
     - name: delete simple stress test client exec in s3
       run: |
-        export s3_key=simple-stress-test-client-${GITHUB_SHA::7}.tgz
+        VERSION=$(git rev-parse --short HEAD)
+        s3_key=simple-stress-test-client-$VERSION.tgz
         aws s3 rm s3://$s3_client_bucket_name/$s3_key
       env:
         s3_client_bucket_name: ${{ vars.S3_CLIENT_BUCKET_NAME }}

@@ -81,6 +81,9 @@ public class DeployPulumiCommand
             Regions = regions
         };
         
+        // Reserved for future features
+        cfg.PrometheusAllowedCidrBlocks = cfg.AllowedCidrBlocks;
+        
         // Delete IP.json if it exists
         var filePath = Environment.GetEnvironmentVariable("ip_json_path") ?? "/tmp/IP.json";
         if (File.Exists(filePath))

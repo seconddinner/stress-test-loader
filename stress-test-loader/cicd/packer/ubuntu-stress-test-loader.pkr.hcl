@@ -40,8 +40,14 @@ build {
     source      = "cicd/config"
     destination = "/tmp/config"
   }
+  provisioner "file" {
+    source      = "cert"
+    destination = "/tmp/cert"
+  }
   provisioner "shell" {
     inline = [
+      "echo set debconf to Noninteractive",
+      "echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections",
       "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
       "sudo rm -rf /var/lib/apt/lists/partial/",
       "sudo apt-get -y -q update",
@@ -51,6 +57,7 @@ build {
       "sudo mkdir -p /usr/local/stress-test-loader",
       "sudo gzip -d -f /tmp/stress-test-loader-linux.gz",
       "sudo mv /tmp/stress-test-loader-linux /usr/local/stress-test-loader/",
+      "sudo mv /tmp/cert /usr/local/stress-test-loader/",
       "sudo mv /tmp/config/systemd/stress-test-loader.service /etc/systemd/system",
       "sudo mv /tmp/config/config.json /usr/local/stress-test-loader",
       "sudo mv /tmp/config/limits.conf /etc/security/limits.conf",
@@ -69,7 +76,7 @@ build {
       "sudo systemctl enable stress-test-loader.service",
 
       "sudo wget -qO- https://repos.influxdata.com/influxdb.key | sudo tee /etc/apt/trusted.gpg.d/influxdb.asc >/dev/null",
-      "sudo source /etc/os-release",
+      // "sudo source /etc/os-release",
       "sudo echo \"deb https://repos.influxdata.com/$ID $VERSION_CODENAME stable\" | sudo tee /etc/apt/sources.list.d/influxdb.list",
       "sudo sudo apt-get update && sudo apt-get install telegraf",
 
