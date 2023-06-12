@@ -121,8 +121,8 @@ jobs:
         cd bin/Release/net6.0/linux-arm64/publish
         VERSION=$(git rev-parse --short HEAD)
         s3_key=simple-stress-test-client-$VERSION.tgz
-        tar czf /tmp/s3_key.tgz ./
-        aws s3 cp /tmp/s3_key.tgz s3://$s3_client_bucket_name/$s3_key
+        tar czf /tmp/$s3_key ./
+        aws s3 cp /tmp/$s3_key s3://$s3_client_bucket_name/$s3_key
       env:
         s3_client_bucket_name: ${{ vars.S3_CLIENT_BUCKET_NAME }}
 
