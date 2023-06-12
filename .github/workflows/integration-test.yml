@@ -68,14 +68,17 @@ jobs:
       if: steps.filter.outputs.stress-test-loader  == 'true'
       run: cd stress-test-loader; bash ./build.sh
 
-    - name: packer build
-      if: steps.filter.outputs.packer  == 'true'
+    - name: generate certs for ssl
       run: |
         cd $GITHUB_WORKSPACE/stress-test-loader
         rm -rf cert
         mkdir cert
         echo "${{ secrets.CA_KEY }}" > cert/ca-key.pem
         bash gen_cert.sh
+
+    - name: packer build
+      if: steps.filter.outputs.packer  == 'true'
+      run: |
         cd $GITHUB_WORKSPACE/stress-test-loader
         bash ./cicd/ami/build-stress-test-loader.sh
     
@@ -118,8 +121,8 @@ jobs:
         cd bin/Release/net6.0/linux-arm64/publish
         VERSION=$(git rev-parse --short HEAD)
         s3_key=simple-stress-test-client-$VERSION.tgz
-        tar czf /tmp/s3_key.tgz ./
-        aws s3 cp /tmp/s3_key.tgz s3://$s3_client_bucket_name/$s3_key
+        tar czf /tmp/$s3_key ./
+        aws s3 cp /tmp/$s3_key s3://$s3_client_bucket_name/$s3_key
       env:
         s3_client_bucket_name: ${{ vars.S3_CLIENT_BUCKET_NAME }}
 

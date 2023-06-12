@@ -1,0 +1,47 @@
+name: Build docker image
+on:
+  pull_request:
+    paths-ignore: [ '*.md' ]
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+jobs:
+  push:
+    name: Build & push docker image
+    runs-on: ubuntu-latest
+    environment: TEST
+    permissions:
+      packages: write
+      contents: read
+    env:
+      IMAGE_NAME: seconddinner/build
+      REGISTRY: ghcr.io
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build image
+        run: docker build . --file Dockerfile --tag $IMAGE_NAME
+        working-directory: build-container/
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push image
+        run: |
+          IMAGE_ID=$REGISTRY/$IMAGE_NAME
+          VERSION=${{ vars.BUILD_CONTAINER_VERSION }}
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
+
+
