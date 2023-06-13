@@ -17,6 +17,8 @@ on:
         required: true
       STRESS_TEST_TOTAL_TIME:
         required: true
+      SSH_PRIVATE_KEY:
+        required: true
       
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -47,21 +49,27 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-        submodules: recursive
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         role-to-assume: arn:aws:iam::${{ secrets.TARGET_ACCOUNT }}:role/githubaction-role
         aws-region: us-west-2
+    
+    - name: generate certs for ssl
+      run: |
+        cd $GITHUB_WORKSPACE/stress-test-loader
+        rm -rf cert
+        mkdir cert
+        echo "${{ secrets.CA_KEY }}" > cert/ca-key.pem
+        bash gen_cert.sh
 
     - name: pulumi stress test infra
       run: |
-        cd infra-pulumi/Infra.Pulumi/Infra.Pulumi
+        cd $GITHUB_WORKSPACE/infra-pulumi/Infra.Pulumi/Infra.Pulumi
         public_ip=$(curl -s https://ipinfo.io/ip)
         export stress_test_loader_allowed_cidr="$public_ip/32"
         dotnet run --project-name stress-test-loader-pulumi --stack-name dev
-      working-directory: Tools/StressTestLoader
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }} 
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }}
@@ -73,18 +81,26 @@ jobs:
 
     - name: run stress test
       run: |
-        cd stress-test-loader/client
+        cd $GITHUB_WORKSPACE/stress-test-loader/client
         VERSION=$(git rev-parse --short HEAD)
         echo "${{ secrets.STRESS_TEST_JSON }}" > stresstest.json
         go run main.go stresstest.json /tmp/IP.json ${{ secrets.STRESS_TEST_TOTAL_TIME }}
-      working-directory: Tools/StressTestLoader
+
+    - name: get stress test result
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > id_ed25519
+        chmod 600 id_ed25519
+        cat /tmp/IP.json | jq -r '.[][] | .public_ip' > /tmp/IP.txt
+        cat /tmp/IP.txt | while read -r ip; do
+          echo "Connecting to $ip through ssh"
+          ssh -n -i id_ed25519 -o StrictHostKeyChecking=no ubuntu@$ip "cat /tmp/stress-test-log"
+        done
 
     - name: pulumi destroy stress test infra
       if: always()
       run: |
-        cd infra-pulumi/Infra.Pulumi/Infra.Pulumi
+        cd $GITHUB_WORKSPACE/infra-pulumi/Infra.Pulumi/Infra.Pulumi
         dotnet run --project-name stress-test-loader-pulumi --stack-name dev --destroy
-      working-directory: Tools/StressTestLoader
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }} 
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }}
@@ -99,4 +115,3 @@ jobs:
       run: |
         VERSION=$(git rev-parse --short HEAD)
         aws s3 rm s3://${{ secrets.STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME }}/${{ secrets.S3_KEY }}
-      working-directory: Tools/StressTestLoader
