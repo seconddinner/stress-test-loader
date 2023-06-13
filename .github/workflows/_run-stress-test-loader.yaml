@@ -99,7 +99,7 @@ jobs:
         cat /tmp/IP.json | jq -r '.[][] | .public_ip' > /tmp/IP.txt
         cat /tmp/IP.txt | while read -r ip; do
           echo "Connecting to $ip through ssh"
-          ssh -n -i id_ed25519 -o StrictHostKeyChecking=no ubuntu@$ip "cat /tmp/stress-test-log"
+          ssh -n -i id_ed25519 -o StrictHostKeyChecking=no ubuntu@$ip "tail -n 100 /tmp/stress-test-log"
         done
 
     - name: pulumi destroy stress test infra
