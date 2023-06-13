@@ -19,6 +19,8 @@ on:
         required: true
       SSH_PRIVATE_KEY:
         required: true
+      CA_KEY:
+        required: true
       
 concurrency:
   group: ${{ github.head_ref || github.run_id }}

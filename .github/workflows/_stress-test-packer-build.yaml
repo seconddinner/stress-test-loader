@@ -2,6 +2,11 @@ name: x (Reusable) Stress Test Packer Build Workflow
 
 on:
   workflow_call:
+    secrets:
+      TARGET_ACCOUNT:
+        required: true
+      CA_KEY:
+        required: true
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
