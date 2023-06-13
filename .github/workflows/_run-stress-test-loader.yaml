@@ -1,0 +1,105 @@
+name: x (Reusable) Stress Test Loader Run Workflow
+
+on:
+  workflow_call:
+    secrets:
+      GITHUB_ACTION_PULUMI_ACCESS_TOKEN:
+        required: true
+      STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME:
+        required: true
+      STRESSTESTLOADER_S3_LOG_BUCKET_NAME:
+        required: true
+      TARGET_ACCOUNT:
+        required: true
+      S3_KEY:
+        required: true
+      STRESS_TEST_JSON:
+        required: true
+      STRESS_TEST_TOTAL_TIME:
+        required: true
+      github_token:
+        required: true
+      
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+
+jobs:
+  stress-test:
+    runs-on: ubuntu-latest
+    environment: Internal
+    container:
+      image: ghcr.io/seconddinner/build:${{ vars.BUILD_CONTAINER_VERSION }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    env:
+      SOURCE: ${{ github.ref_name }}
+    # These permissions are needed to interact with GitHub's OIDC Token endpoint.
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
+    steps:
+      # workaround for the "fatal: detected dubious ownership in repository" error
+      # this should be a github's problem
+      # https://github.com/actions/runner-images/issues/6775
+    - name: Change Owner of Container Working Directory
+      run: chown root:root .
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: recursive
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: arn:aws:iam::${{ secrets.TARGET_ACCOUNT }}:role/githubaction-role
+        aws-region: us-west-2
+
+    - name: pulumi stress test infra
+      run: |
+        cd infra-pulumi/Infra.Pulumi/Infra.Pulumi
+        public_ip=$(curl -s https://ipinfo.io/ip)
+        export stress_test_loader_allowed_cidr="$public_ip/32"
+        dotnet run --project-name stress-test-loader-pulumi --stack-name dev
+      working-directory: Tools/StressTestLoader
+      env:
+        PULUMI_ACCESS_TOKEN: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }} 
+        PULUMI_CONFIG_PASSPHRASE: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }}
+        public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH0qfb2vF40fmeIB8GGfkpjlpZVoVrRUQCe75yoNEO9a SD_STRESSTESTLOADER
+        regions: us-west-1, us-west-2
+        desired_capacity: 2
+        s3_client_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME }}
+        s3_log_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_LOG_BUCKET_NAME }}
+
+    - name: run stress test
+      run: |
+        cd stress-test-loader/client
+        VERSION=$(git rev-parse --short HEAD)
+        echo "${{ secrets.STRESS_TEST_JSON }}" > stresstest.json
+        go run main.go stresstest.json /tmp/IP.json ${{ secrets.STRESS_TEST_TOTAL_TIME }}
+      working-directory: Tools/StressTestLoader
+
+    - name: pulumi destroy stress test infra
+      if: always()
+      run: |
+        cd infra-pulumi/Infra.Pulumi/Infra.Pulumi
+        dotnet run --project-name stress-test-loader-pulumi --stack-name dev --destroy
+      working-directory: Tools/StressTestLoader
+      env:
+        PULUMI_ACCESS_TOKEN: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }} 
+        PULUMI_CONFIG_PASSPHRASE: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }}
+        public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH0qfb2vF40fmeIB8GGfkpjlpZVoVrRUQCe75yoNEO9a SD_STRESSTESTLOADER
+        regions: us-west-1, us-west-2
+        desired_capacity: 2
+        stress_test_loader_allowed_cidr: "1.1.1.1/32" # dummy value
+        s3_client_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME }}
+        s3_log_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_LOG_BUCKET_NAME }}
+
+    - name: delete stress test client exec in s3
+      run: |
+        VERSION=$(git rev-parse --short HEAD)
+        aws s3 rm s3://${{ secrets.STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME }}/${{ secrets.S3_KEY }}
+      working-directory: Tools/StressTestLoader
