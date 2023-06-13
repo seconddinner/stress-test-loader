@@ -17,8 +17,6 @@ on:
         required: true
       STRESS_TEST_TOTAL_TIME:
         required: true
-      github_token:
-        required: true
       
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
