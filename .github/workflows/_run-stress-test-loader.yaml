@@ -51,6 +51,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+        path: stl
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -60,7 +61,7 @@ jobs:
     
     - name: generate certs for ssl
       run: |
-        cd $GITHUB_WORKSPACE/stress-test-loader
+        cd /stl/stress-test-loader
         rm -rf cert
         mkdir cert
         echo "${{ secrets.CA_KEY }}" > cert/ca-key.pem
@@ -68,7 +69,7 @@ jobs:
 
     - name: pulumi stress test infra
       run: |
-        cd $GITHUB_WORKSPACE/infra-pulumi/Infra.Pulumi/Infra.Pulumi
+        cd /stl/infra-pulumi/Infra.Pulumi/Infra.Pulumi
         public_ip=$(curl -s https://ipinfo.io/ip)
         export stress_test_loader_allowed_cidr="$public_ip/32"
         dotnet run --project-name stress-test-loader-pulumi --stack-name dev
@@ -83,7 +84,7 @@ jobs:
 
     - name: run stress test
       run: |
-        cd $GITHUB_WORKSPACE/stress-test-loader/client
+        cd /stl/stress-test-loader/client
         VERSION=$(git rev-parse --short HEAD)
         echo "${{ secrets.STRESS_TEST_JSON }}" > stresstest.json
         go run main.go stresstest.json /tmp/IP.json ${{ secrets.STRESS_TEST_TOTAL_TIME }}
@@ -101,7 +102,7 @@ jobs:
     - name: pulumi destroy stress test infra
       if: always()
       run: |
-        cd $GITHUB_WORKSPACE/infra-pulumi/Infra.Pulumi/Infra.Pulumi
+        cd /stl/infra-pulumi/Infra.Pulumi/Infra.Pulumi
         dotnet run --project-name stress-test-loader-pulumi --stack-name dev --destroy
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }} 
