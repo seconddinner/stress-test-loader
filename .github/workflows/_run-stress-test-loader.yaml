@@ -120,5 +120,4 @@ jobs:
 
     - name: delete stress test client exec in s3
       run: |
-        VERSION=$(git rev-parse --short HEAD)
         aws s3 rm s3://${{ secrets.STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME }}/${{ secrets.S3_KEY }}
