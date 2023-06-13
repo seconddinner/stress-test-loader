@@ -70,10 +70,11 @@ jobs:
 
     - name: pulumi stress test infra
       run: |
-        cd /stl/infra-pulumi/Infra.Pulumi/Infra.Pulumi
+        cd infra-pulumi/Infra.Pulumi/Infra.Pulumi
         public_ip=$(curl -s https://ipinfo.io/ip)
         export stress_test_loader_allowed_cidr="$public_ip/32"
         dotnet run --project-name stress-test-loader-pulumi --stack-name dev
+      working-directory: ./stl
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }} 
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }}
