@@ -47,18 +47,21 @@ jobs:
 
     - name: stress test loader build
       run: |
-        cd /stl/stress-test-loader
+        cd stress-test-loader
         bash ./build.sh
+      working-directory: ./stl
 
     - name: generate certs for ssl
       run: |
-        cd /stl/stress-test-loader
+        cd stress-test-loader
         rm -rf cert
         mkdir cert
         echo "${{ secrets.CA_KEY }}" > cert/ca-key.pem
         bash gen_cert.sh
+      working-directory: ./stl
 
     - name: packer build
       run: |
-        cd /stl/stress-test-loader
+        cd stress-test-loader
         bash ./cicd/ami/build-stress-test-loader.sh
+      working-directory: ./stl

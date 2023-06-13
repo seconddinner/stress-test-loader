@@ -61,11 +61,12 @@ jobs:
     
     - name: generate certs for ssl
       run: |
-        cd /stl/stress-test-loader
+        cd stress-test-loader
         rm -rf cert
         mkdir cert
         echo "${{ secrets.CA_KEY }}" > cert/ca-key.pem
         bash gen_cert.sh
+      working-directory: ./stl
 
     - name: pulumi stress test infra
       run: |
@@ -84,10 +85,11 @@ jobs:
 
     - name: run stress test
       run: |
-        cd /stl/stress-test-loader/client
+        cd stress-test-loader/client
         VERSION=$(git rev-parse --short HEAD)
         echo "${{ secrets.STRESS_TEST_JSON }}" > stresstest.json
         go run main.go stresstest.json /tmp/IP.json ${{ secrets.STRESS_TEST_TOTAL_TIME }}
+      working-directory: ./stl
 
     - name: get stress test result
       run: |
@@ -102,8 +104,9 @@ jobs:
     - name: pulumi destroy stress test infra
       if: always()
       run: |
-        cd /stl/infra-pulumi/Infra.Pulumi/Infra.Pulumi
+        cd infra-pulumi/Infra.Pulumi/Infra.Pulumi
         dotnet run --project-name stress-test-loader-pulumi --stack-name dev --destroy
+      working-directory: ./stl
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }} 
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }}
