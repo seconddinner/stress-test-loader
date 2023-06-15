@@ -1,0 +1,67 @@
+name: x (Reusable) Stress Test Packer Build Workflow
+
+on:
+  workflow_call:
+    secrets:
+      TARGET_ACCOUNT:
+        required: true
+      CA_KEY:
+        required: true
+
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+
+jobs:
+  packer-build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/seconddinner/build:0.0.6
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    env:
+      SOURCE: ${{ github.ref_name }}
+    # These permissions are needed to interact with GitHub's OIDC Token endpoint.
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
+    steps:
+      # workaround for the "fatal: detected dubious ownership in repository" error
+      # this should be a github's problem
+      # https://github.com/actions/runner-images/issues/6775
+    - name: Change Owner of Container Working Directory
+      run: chown root:root .
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        repository: seconddinner/stress-test-loader
+        path: stl
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: arn:aws:iam::${{ secrets.TARGET_ACCOUNT }}:role/githubaction-role
+        aws-region: us-west-2
+
+    - name: stress test loader build
+      run: |
+        cd stress-test-loader
+        bash ./build.sh
+      working-directory: ./stl
+
+    - name: generate certs for ssl
+      run: |
+        cd stress-test-loader
+        rm -rf cert
+        mkdir cert
+        echo "${{ secrets.CA_KEY }}" > cert/ca-key.pem
+        bash gen_cert.sh
+      working-directory: ./stl
+
+    - name: packer build
+      run: |
+        cd stress-test-loader
+        bash ./cicd/ami/build-stress-test-loader.sh
+      working-directory: ./stl
