@@ -12,7 +12,7 @@ concurrency:
   group: ${{ github.head_ref || github.run_id }}
 
 jobs:
-  pckaer-build:
+  packer-build:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/seconddinner/build:0.0.6
