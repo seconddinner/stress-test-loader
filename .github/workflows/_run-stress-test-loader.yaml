@@ -97,7 +97,7 @@ jobs:
       working-directory: ./stl
 
     - name: get stress test result
-      if: ${{ github.event.inputs.GET_RESULTS == 'true' }}
+      if: ${{ inputs.GET_RESULTS }} == 'true'
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > id_ed25519
         chmod 600 id_ed25519
