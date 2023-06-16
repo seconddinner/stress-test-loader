@@ -82,6 +82,5 @@ jobs:
     - name: output ec2 ip
       id: output_ec2_ip
       run: |
-        go run main.go stresstest.json /tmp/IP.json ${{ secrets.STRESS_TEST_TOTAL_TIME }}
-        echo "EC2_IP=$(cat /tmp/IP.json)" >> $GITHUB_OUTPUT
+        echo "EC2_IP=$(cat /tmp/IP.json | tr '\n' ' ')" >> $GITHUB_OUTPUT
       working-directory: ./stl
