@@ -32,9 +32,6 @@ on:
         required: true
       CA_KEY:
         required: true
-      
-concurrency:
-  group: stl-${{ github.head_ref || github.run_id }}
 
 jobs:
   stress-test:

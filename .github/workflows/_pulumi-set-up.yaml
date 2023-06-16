@@ -23,9 +23,6 @@ on:
     outputs:
       EC2_IP:
         value: ${{ jobs.stress-test-pulumi-set-up.outputs.EC2_IP }}
-      
-concurrency:
-  group: stl-${{ github.head_ref || github.run_id }}
 
 jobs:
   stress-test-pulumi-set-up:
