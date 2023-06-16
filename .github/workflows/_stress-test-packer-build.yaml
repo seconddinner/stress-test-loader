@@ -9,7 +9,7 @@ on:
         required: true
 
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
+  group: stl-${{ github.head_ref || github.run_id }}
 
 jobs:
   packer-build:
