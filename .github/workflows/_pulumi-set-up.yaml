@@ -22,7 +22,7 @@ on:
         required: true
     outputs:
       EC2_IP:
-        value: ${{ jobs.pulumi-set-up.outputs.TARGET_ACCOUNT }}
+        value: ${{ jobs.stress-test-pulumi-set-up.outputs.EC2_IP }}
       
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -43,7 +43,7 @@ jobs:
       contents: read
       packages: read
     outputs:
-      TARGET_ACCOUNT: ${{ steps.output_ec2_ip.outputs.TARGET_ACCOUNT }}
+      EC2_IP: ${{ steps.output_ec2_ip.outputs.EC2_IP }}
     steps:
       # workaround for the "fatal: detected dubious ownership in repository" error
       # this should be a github's problem
