@@ -93,6 +93,7 @@ jobs:
         cd stress-test-loader/client
         VERSION=$(git rev-parse --short HEAD)
         echo "${{ secrets.STRESS_TEST_JSON }}" > stresstest.json
+        aws s3 cp stresstest.json s3://${{ secrets.STRESSTESTLOADER_S3_LOG_BUCKET_NAME }}/stress-test-config-${{ github.run_id }}-${{ github.run_attempt }}.json
         go run main.go stresstest.json /tmp/IP.json ${{ secrets.STRESS_TEST_TOTAL_TIME }}
       working-directory: ./stl
 
@@ -122,7 +123,3 @@ jobs:
         stress_test_loader_allowed_cidr: "1.1.1.1/32" # dummy value
         s3_client_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME }}
         s3_log_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_LOG_BUCKET_NAME }}
-
-    - name: delete stress test client exec in s3
-      run: |
-        aws s3 rm s3://${{ secrets.STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME }}/${{ secrets.S3_KEY }}
