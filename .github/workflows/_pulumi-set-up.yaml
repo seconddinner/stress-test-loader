@@ -82,5 +82,5 @@ jobs:
     - name: output ec2 ip
       id: output_ec2_ip
       run: |
-        echo "EC2_IP=$(cat /tmp/IP.json | tr '\n' ' ')" >> $GITHUB_OUTPUT
+        echo "EC2_IP=$(cat /tmp/IP.json | tr '\n' ' ' | sed 's/"/\\"/g')" >> $GITHUB_OUTPUT
       working-directory: ./stl
