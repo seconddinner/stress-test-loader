@@ -18,8 +18,6 @@ on:
         required: true
       TARGET_ACCOUNT:
         required: true
-      SSH_PRIVATE_KEY:
-        required: true
       CA_KEY:
         required: true
     outputs:
