@@ -82,7 +82,6 @@ jobs:
     - name: run stress test
       run: |
         cd stress-test-loader/client
-        VERSION=$(git rev-parse --short HEAD)
         echo "${{ inputs.EC2_IP }}" > /tmp/IP.json
         echo "${{ secrets.STRESS_TEST_JSON }}" > stresstest.json
         aws s3 cp stresstest.json s3://${{ secrets.STRESSTESTLOADER_S3_LOG_BUCKET_NAME }}/stress-test-config-${{ github.run_id }}-${{ github.run_attempt }}.json
