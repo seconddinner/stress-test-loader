@@ -83,7 +83,7 @@ jobs:
       run: |
         cd stress-test-loader/client
         VERSION=$(git rev-parse --short HEAD)
-        echo "${{ github.event.inputs.EC2_IP }}" > /tmp/IP.json
+        echo "${{ inputs.EC2_IP }}" > /tmp/IP.json
         echo "${{ secrets.STRESS_TEST_JSON }}" > stresstest.json
         aws s3 cp stresstest.json s3://${{ secrets.STRESSTESTLOADER_S3_LOG_BUCKET_NAME }}/stress-test-config-${{ github.run_id }}-${{ github.run_attempt }}.json
         go run main.go stresstest.json /tmp/IP.json ${{ secrets.STRESS_TEST_TOTAL_TIME }}
@@ -110,8 +110,8 @@ jobs:
         PULUMI_ACCESS_TOKEN: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }} 
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }}
         public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH0qfb2vF40fmeIB8GGfkpjlpZVoVrRUQCe75yoNEO9a SD_STRESSTESTLOADER
-        regions: ${{ github.event.inputs.REGIONS }}
-        desired_capacity: ${{ github.event.inputs.DESIRED_CAPACITY }}
+        regions: ${{ inputs.REGIONS }}
+        desired_capacity: ${{ inputs.DESIRED_CAPACITY }}
         stress_test_loader_allowed_cidr: "1.1.1.1/32" # dummy value
         s3_client_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME }}
         s3_log_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_LOG_BUCKET_NAME }}

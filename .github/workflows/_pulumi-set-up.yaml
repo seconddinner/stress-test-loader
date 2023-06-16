@@ -74,8 +74,8 @@ jobs:
         PULUMI_ACCESS_TOKEN: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }} 
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }}
         public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH0qfb2vF40fmeIB8GGfkpjlpZVoVrRUQCe75yoNEO9a SD_STRESSTESTLOADER
-        regions: ${{ github.event.inputs.REGIONS }}
-        desired_capacity: ${{ github.event.inputs.DESIRED_CAPACITY }}
+        regions: ${{ inputs.REGIONS }}
+        desired_capacity: ${{ inputs.DESIRED_CAPACITY }}
         s3_client_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME }}
         s3_log_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_LOG_BUCKET_NAME }}
 
