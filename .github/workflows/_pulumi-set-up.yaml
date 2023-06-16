@@ -1,0 +1,83 @@
+name: x (Reusable) Stress Test Loader Pulumi Set Up Workflow
+
+on:
+  workflow_call:
+    inputs:
+      REGIONS:
+        type: string
+        default: us-west-1, us-west-2
+      DESIRED_CAPACITY:
+        type: number
+        default: 2
+    secrets:
+      GITHUB_ACTION_PULUMI_ACCESS_TOKEN:
+        required: true
+      STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME:
+        required: true
+      STRESSTESTLOADER_S3_LOG_BUCKET_NAME:
+        required: true
+      TARGET_ACCOUNT:
+        required: true
+      CA_KEY:
+        required: true
+    outputs:
+      EC2_IP:
+        value: ${{ jobs.stress-test-pulumi-set-up.outputs.EC2_IP }}
+
+jobs:
+  stress-test-pulumi-set-up:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/seconddinner/build:0.0.6
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    env:
+      SOURCE: ${{ github.ref_name }}
+    # These permissions are needed to interact with GitHub's OIDC Token endpoint.
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
+    outputs:
+      EC2_IP: ${{ steps.output_ec2_ip.outputs.EC2_IP }}
+    steps:
+      # workaround for the "fatal: detected dubious ownership in repository" error
+      # this should be a github's problem
+      # https://github.com/actions/runner-images/issues/6775
+    - name: Change Owner of Container Working Directory
+      run: chown root:root .
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        repository: seconddinner/stress-test-loader
+        path: stl
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: arn:aws:iam::${{ secrets.TARGET_ACCOUNT }}:role/githubaction-role
+        aws-region: us-west-2
+
+    - name: pulumi stress test infra
+      run: |
+        cd infra-pulumi/Infra.Pulumi/Infra.Pulumi
+        public_ip=$(curl -s https://ipinfo.io/ip)
+        export stress_test_loader_allowed_cidr="$public_ip/32"
+        dotnet run --project-name stress-test-loader-pulumi --stack-name stress
+      working-directory: ./stl
+      env:
+        PULUMI_ACCESS_TOKEN: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }} 
+        PULUMI_CONFIG_PASSPHRASE: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }}
+        public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH0qfb2vF40fmeIB8GGfkpjlpZVoVrRUQCe75yoNEO9a SD_STRESSTESTLOADER
+        regions: ${{ inputs.REGIONS }}
+        desired_capacity: ${{ inputs.DESIRED_CAPACITY }}
+        s3_client_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME }}
+        s3_log_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_LOG_BUCKET_NAME }}
+
+    - name: output ec2 ip
+      id: output_ec2_ip
+      run: |
+        echo "EC2_IP=$(cat /tmp/IP.json | tr '\n' ' ' | sed 's/"/\\"/g')" >> $GITHUB_OUTPUT
+      working-directory: ./stl

@@ -6,6 +6,15 @@ on:
       GET_RESULTS:
         type: boolean
         default: false
+      EC2_IP:
+        type: string
+        required: true
+      REGIONS:
+        type: string
+        default: us-west-1, us-west-2
+      DESIRED_CAPACITY:
+        type: number
+        default: 2
     secrets:
       GITHUB_ACTION_PULUMI_ACCESS_TOKEN:
         required: true
@@ -15,8 +24,6 @@ on:
         required: true
       TARGET_ACCOUNT:
         required: true
-      S3_KEY:
-        required: true
       STRESS_TEST_JSON:
         required: true
       STRESS_TEST_TOTAL_TIME:
@@ -25,9 +32,6 @@ on:
         required: true
       CA_KEY:
         required: true
-      
-concurrency:
-  group: ${{ github.head_ref || github.run_id }}
 
 jobs:
   stress-test:
@@ -62,17 +66,8 @@ jobs:
       with:
         role-to-assume: arn:aws:iam::${{ secrets.TARGET_ACCOUNT }}:role/githubaction-role
         aws-region: us-west-2
-    
-    - name: generate certs for ssl
-      run: |
-        cd stress-test-loader
-        rm -rf cert
-        mkdir cert
-        echo "${{ secrets.CA_KEY }}" > cert/ca-key.pem
-        bash gen_cert.sh
-      working-directory: ./stl
 
-    - name: pulumi stress test infra
+    - name: pulumi stress test infra (update allowed cidr)
       run: |
         cd infra-pulumi/Infra.Pulumi/Infra.Pulumi
         public_ip=$(curl -s https://ipinfo.io/ip)
@@ -83,22 +78,31 @@ jobs:
         PULUMI_ACCESS_TOKEN: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }} 
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }}
         public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH0qfb2vF40fmeIB8GGfkpjlpZVoVrRUQCe75yoNEO9a SD_STRESSTESTLOADER
-        regions: us-west-1, us-west-2
-        desired_capacity: 2
+        regions: ${{ inputs.REGIONS }}
+        desired_capacity: ${{ inputs.DESIRED_CAPACITY }}
         s3_client_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME }}
         s3_log_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_LOG_BUCKET_NAME }}
+    
+    - name: generate certs for ssl
+      run: |
+        cd stress-test-loader
+        rm -rf cert
+        mkdir cert
+        echo "${{ secrets.CA_KEY }}" > cert/ca-key.pem
+        bash gen_cert.sh
+      working-directory: ./stl
 
     - name: run stress test
       run: |
         cd stress-test-loader/client
-        VERSION=$(git rev-parse --short HEAD)
+        echo "${{ inputs.EC2_IP }}" > /tmp/IP.json
         echo "${{ secrets.STRESS_TEST_JSON }}" > stresstest.json
         aws s3 cp stresstest.json s3://${{ secrets.STRESSTESTLOADER_S3_LOG_BUCKET_NAME }}/stress-test-config-${{ github.run_id }}-${{ github.run_attempt }}.json
         go run main.go stresstest.json /tmp/IP.json ${{ secrets.STRESS_TEST_TOTAL_TIME }}
       working-directory: ./stl
 
     - name: get stress test result
-      if: ${{ inputs.GET_RESULTS }} == 'true'
+      if: ${{ inputs.GET_RESULTS == true }}
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > id_ed25519
         chmod 600 id_ed25519
@@ -118,8 +122,8 @@ jobs:
         PULUMI_ACCESS_TOKEN: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }} 
         PULUMI_CONFIG_PASSPHRASE: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }}
         public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH0qfb2vF40fmeIB8GGfkpjlpZVoVrRUQCe75yoNEO9a SD_STRESSTESTLOADER
-        regions: us-west-1, us-west-2
-        desired_capacity: 2
+        regions: ${{ inputs.REGIONS }}
+        desired_capacity: ${{ inputs.DESIRED_CAPACITY }}
         stress_test_loader_allowed_cidr: "1.1.1.1/32" # dummy value
         s3_client_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME }}
         s3_log_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_LOG_BUCKET_NAME }}
