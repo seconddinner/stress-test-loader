@@ -8,9 +8,6 @@ on:
       CA_KEY:
         required: true
 
-concurrency:
-  group: stl-${{ github.head_ref || github.run_id }}
-
 jobs:
   packer-build:
     runs-on: ubuntu-latest
