@@ -13,8 +13,8 @@ on:
         type: string
         default: us-west-1, us-west-2
       DESIRED_CAPACITY:
-        type: number
-        default: 2
+        type: string
+        default: "2"
     secrets:
       GITHUB_ACTION_PULUMI_ACCESS_TOKEN:
         required: true
