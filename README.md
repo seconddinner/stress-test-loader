@@ -4,8 +4,6 @@ This is the [Second Dinner](https://seconddinner.com/work-together-at-second-din
 
 Currently, this setup targets AWS, but it can be ported other clouds if needed. 
 
-[Note] We are transitioning from terraform to pulumi for ease of maintain
-
 Directory structure:
 
 * stress-test-loader (golang service that can load any stress-test-client, plus packer templates for creating AMIs)
@@ -47,6 +45,10 @@ To secure the GRPC connection between the client and server of the stress test l
 ## infra-pulumi
 
 Once you have created an AWS AMI for stress-test, you can use infra-pulumi to create EC2 instance and create as many EC2 instances as your AWS account allows.
+
+[Note] We migrated from Terraform to Pulumi for the following reasons:
+1. Language Flexibility: While Terraform uses its own domain-specific language (HCL), Pulumi allows infrastructure provisioning and management using popular general-purpose languages like C#, JavaScript, Python, TypeScript, and Go.
+1. Declarative and Imperative Approaches: While Terraform focuses on the declarative paradigm, Pulumi offers both declarative and imperative approaches. Pulumi's support for the imperative style allows for more fine-grained control and dynamic changes during provisioning. In our case, we would like to provision the infrastructure in multiple regions. In Terraform, we had to hardcode each region in the code, which was inflexible and hard to maintain. In Pulumi, we can read the list of regions from environment variables and implement a loop to achieve this.
 
 ### pulumi stress infrastructure 
 
