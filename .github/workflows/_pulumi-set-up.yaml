@@ -7,8 +7,8 @@ on:
         type: string
         default: us-west-1, us-west-2
       DESIRED_CAPACITY:
-        type: number
-        default: 2
+        type: string
+        default: "2"
     secrets:
       GITHUB_ACTION_PULUMI_ACCESS_TOKEN:
         required: true
@@ -81,3 +81,20 @@ jobs:
       run: |
         echo "EC2_IP=$(cat /tmp/IP.json | tr '\n' ' ' | sed 's/"/\\"/g')" >> $GITHUB_OUTPUT
       working-directory: ./stl
+    
+    - name: pulumi destroy stress test infra
+      if: failure()
+      run: |
+        cd infra-pulumi/Infra.Pulumi/Infra.Pulumi
+        dotnet run --project-name stress-test-loader-pulumi --stack-name stress --destroy
+      working-directory: ./stl
+      env:
+        PULUMI_ACCESS_TOKEN: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }} 
+        PULUMI_CONFIG_PASSPHRASE: ${{ secrets.GITHUB_ACTION_PULUMI_ACCESS_TOKEN }}
+        public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH0qfb2vF40fmeIB8GGfkpjlpZVoVrRUQCe75yoNEO9a SD_STRESSTESTLOADER
+        regions: ${{ inputs.REGIONS }}
+        desired_capacity: ${{ inputs.DESIRED_CAPACITY }}
+        stress_test_loader_allowed_cidr: "1.1.1.1/32" # dummy value
+        s3_client_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME }}
+        s3_log_bucket_name: ${{ secrets.STRESSTESTLOADER_S3_LOG_BUCKET_NAME }}
+
