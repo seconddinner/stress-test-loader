@@ -4,8 +4,6 @@ This is the [Second Dinner](https://seconddinner.com/work-together-at-second-din
 
 Currently, this setup targets AWS, but it can be ported other clouds if needed. 
 
-[Note] We are transitioning from terraform to pulumi for ease of maintain
-
 Directory structure:
 
 * stress-test-loader (golang service that can load any stress-test-client, plus packer templates for creating AMIs)
@@ -47,6 +45,10 @@ To secure the GRPC connection between the client and server of the stress test l
 ## infra-pulumi
 
 Once you have created an AWS AMI for stress-test, you can use infra-pulumi to create EC2 instance and create as many EC2 instances as your AWS account allows.
+
+[Note] We migrated from Terraform to Pulumi for the following reasons:
+1. Language Flexibility: While Terraform uses its own domain-specific language (HCL), Pulumi allows infrastructure provisioning and management using popular general-purpose languages like C#, JavaScript, Python, TypeScript, and Go.
+1. Declarative and Imperative Approaches: While Terraform focuses on the declarative paradigm, Pulumi offers both declarative and imperative approaches. Pulumi's support for the imperative style allows for more fine-grained control and dynamic changes during provisioning. In our case, we would like to provision the infrastructure in multiple regions. In Terraform, we had to hardcode each region in the code, which was inflexible and hard to maintain. In Pulumi, we can read the list of regions from environment variables and implement a loop to achieve this.
 
 ### pulumi stress infrastructure 
 
@@ -119,3 +121,46 @@ Duration: 4m20s
 1. To check the status of the stress tests (running or finished) ```go run main.go -p /tmp/IP.json```
 1. To stop the stress tests ```go run main.go -s /tmp/IP.json```
 
+
+## How to use our GitHub Actions workflows?
+We provided three reusable GitHub Actions workflows, namely [_stress-test-packer-build.yaml](https://github.com/seconddinner/stress-test-loader/blob/main/.github/workflows/_stress-test-packer-build.yaml), [_pulumi-set-up.yaml](https://github.com/seconddinner/stress-test-loader/blob/main/.github/workflows/_pulumi-set-up.yaml), and [_run-stress-test.yaml](https://github.com/seconddinner/stress-test-loader/blob/main/.github/workflows/_run-stress-test.yaml). You can fork this repo and call these workflows from your repo.
+
+### [_stress-test-packer-build.yaml](https://github.com/seconddinner/stress-test-loader/blob/main/.github/workflows/_stress-test-packer-build.yaml)
+This workflow builds the stress test loader, generates certificates for the SSL connection between stress test loader clients and servers, and creates an AMI using Packer.
+To call this workflow, you will need to provide the following secrets:
+1. [TARGET_ACCOUNT](https://docs.aws.amazon.com/IAM/latest/UserGuide/FindingYourAWSId.html): Your AWS Account ID.
+1. [CA_KEY](https://gist.github.com/Soarez/9688998): The private key of your certificate authority (CA) used in SSL. You may generate a new key by `openssl genrsa -out example.org.key 2048`
+
+### [_pulumi-set-up.yaml](https://github.com/seconddinner/stress-test-loader/blob/main/.github/workflows/_pulumi-set-up.yaml)
+This workflow sets up the infrastructure on AWS for stress test clients. The infrastructure includes S3 buckets (may already exist), IAM roles and policies, VPC, and AutoScaling Groups in one or more regions.
+To call this workflow, you will need to provide the following input:
+1. [REGIONS](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html): The AWS regions to create ec2 instances, separated by commas (e.g., "us-east-1, us-west-2").
+1. [DESIRED_CAPACITY](https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-capacity-limits.html): The number of ec2 instances to create in a region.
+
+And the following secrets:
+1. [GITHUB_ACTION_PULUMI_ACCESS_TOKEN](https://www.pulumi.com/docs/pulumi-cloud/access-management/access-tokens/): Your Pulumi Cloud access token.
+1. [STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME](https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html): The name of your S3 bucket that stores the stress test client.
+1. [STRESSTESTLOADER_S3_LOG_BUCKET_NAME](https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html): The name of your S3 bucket that will store the stress test logs.
+1. [TARGET_ACCOUNT](https://docs.aws.amazon.com/IAM/latest/UserGuide/FindingYourAWSId.html): Your AWS Account ID.
+1. [CA_KEY](https://gist.github.com/Soarez/9688998): The private key of your certificate authority (CA) used in SSL. This should be the same one you used for the Packer build.
+
+This workflow will produce one output:
+1. [EC2_IP](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-instance-addressing.html): The public IP addresses of the EC2 instances created by this workflow.
+
+### [_run-stress-test.yaml](https://github.com/seconddinner/stress-test-loader/blob/main/.github/workflows/_run-stress-test.yaml)
+This workflow starts the stress tests on the launched EC2 instances. It will wait until all stress tests are finished or the specified timeout. Optionally, it can ssh into the EC2 instances and fetch the logs. In the end, it will destroy the infrastructure.
+To call this workflow, you will need to provide the following input:
+1. [GET_RESULTS](https://github.com/seconddinner/stress-test-loader/blob/0ecba75183a16c55b9b34c3389fc09b886ae3243/.github/workflows/_run-stress-test.yaml#LL104C8-L104C8): A boolean. If set, the stress test loader will ssh into the EC2 instances and print the last 100 lines of `/tmp/stress-test-log` to the GitHub Actions console.
+1. [EC2_IP](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-instance-addressing.html): The public IP addresses of the EC2 instances output by `_pulumi-set-up.yaml`.
+1. [REGIONS](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html): The AWS regions to create ec2 instances, separated by commas (e.g., "us-east-1, us-west-2").
+1. [DESIRED_CAPACITY](https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-capacity-limits.html): The number of ec2 instances to create in a region.
+
+And the following secrets:
+1. [GITHUB_ACTION_PULUMI_ACCESS_TOKEN](https://www.pulumi.com/docs/pulumi-cloud/access-management/access-tokens/): Your Pulumi Cloud access token.
+1. [STRESSTESTLOADER_S3_CLIENT_BUCKET_NAME](https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html): The name of your S3 bucket that stores the stress test client.
+1. [STRESSTESTLOADER_S3_LOG_BUCKET_NAME](https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html): The name of your S3 bucket that will store the stress test logs.
+1. [TARGET_ACCOUNT](https://docs.aws.amazon.com/IAM/latest/UserGuide/FindingYourAWSId.html): Your AWS Account ID.
+1. [STRESS_TEST_JSON](https://jsonlint.com/): The config json for the stress test loader. Please see the section `Create a stress test client configuration json` in this README.
+1. [STRESS_TEST_TOTAL_TIME](https://www.loadview-testing.com/blog/how-long-should-a-website-load-test-run/#:~:text=As%20a%20rule%20of%20thumb,test%20conducted%20and%20your%20goals.): The maximum time (in seconds) to run the stress test. After the specified time, any running stress test will be stopped by the loader.
+1. [SSH_PRIVATE_KEY](https://www.techrepublic.com/article/how-to-view-your-ssh-keys-in-linux-macos-and-windows/): Your ssh public key.
+1. [CA_KEY](https://gist.github.com/Soarez/9688998): The private key of your certificate authority (CA) used in SSL. This should be the same one you used for the Packer build.
