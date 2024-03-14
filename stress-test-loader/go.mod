@@ -5,8 +5,8 @@ go 1.17
 require (
 	github.com/aws/aws-sdk-go v1.44.279
 	github.com/sirupsen/logrus v1.9.3
-	google.golang.org/grpc v1.55.0
-	google.golang.org/protobuf v1.30.0
+	google.golang.org/grpc v1.56.3
+	google.golang.org/protobuf v1.33.0
 )
 
 require (
