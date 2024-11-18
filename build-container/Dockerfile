@@ -39,7 +39,7 @@ ENV PATH="/bin/pulumi:${PATH}"
 
 ADD https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb ./
 RUN dpkg -i packages-microsoft-prod.deb ; rm packages-microsoft-prod.deb
-RUN apt-get update && apt-get install -y dotnet-sdk-6.0
+RUN apt-get update && apt-get install -y dotnet-sdk-9.0
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 RUN unzip awscliv2.zip
