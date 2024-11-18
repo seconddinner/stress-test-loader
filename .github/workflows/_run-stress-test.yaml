@@ -37,7 +37,7 @@ jobs:
   stress-test:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/seconddinner/build:0.0.6
+      image: ghcr.io/seconddinner/build:0.0.7
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}
