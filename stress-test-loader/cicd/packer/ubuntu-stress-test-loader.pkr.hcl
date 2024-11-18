@@ -57,6 +57,8 @@ build {
       "sudo mkdir -p /usr/local/stress-test-loader",
       "sudo gzip -d -f /tmp/stress-test-loader-linux.gz",
       "sudo mv /tmp/stress-test-loader-linux /usr/local/stress-test-loader/",
+      "sudo cp /tmp/cert/ca-key.pem /usr/local/share/ca-certificates/stress-test-loader.crt",
+      "sudo update-ca-certificates",
       "sudo mv /tmp/cert /usr/local/stress-test-loader/",
       "sudo mv /tmp/config/systemd/stress-test-loader.service /etc/systemd/system",
       "sudo mv /tmp/config/config.json /usr/local/stress-test-loader",
